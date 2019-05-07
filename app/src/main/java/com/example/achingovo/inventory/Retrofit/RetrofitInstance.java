@@ -1,0 +1,306 @@
+package com.example.achingovo.inventory.Retrofit;
+
+import android.util.Log;
+
+import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransfer;
+import com.example.achingovo.inventory.Utilities.Login.Login;
+import com.google.gson.Gson;
+
+import java.io.IOException;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+public class RetrofitInstance {
+
+    /*
+    *  Methods to upload reports to the server
+    * */
+    private static Response response = null;
+    String loginResponse;
+
+    public static Retrofit getRetrofit(){
+
+        try{
+
+            // Create a trust manager that does not validate certificate chains
+            final TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        @Override
+                        public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                        }
+
+                        @Override
+                        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                        }
+
+                        @Override
+                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                            return new java.security.cert.X509Certificate[]{};
+                        }
+                    }
+            };
+
+            // Install the all-trusting trust manager
+            final SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+
+            // Create an ssl socket factory with our all-trusting manager
+            final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+
+            HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+            interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .addInterceptor(interceptor)
+                    .sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0])
+                    .hostnameVerifier(new HostnameVerifier() {
+                        @Override
+                        public boolean verify(String hostname, SSLSession session) {
+                            return true;
+                        }
+                    })
+                    .build();
+
+            Retrofit retroFit = new Retrofit.Builder()
+                    .baseUrl("https://rivdb:50000/b1s/v1/")
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .client(client)
+                    .build();
+
+            return retroFit;
+
+        }catch (Exception e){
+            Log.i("ResponseSize", "Size: Retrofit -- " + e.toString());
+        }
+
+        return null;
+
+    }
+
+    public static String login(){
+
+        RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
+        Call retrofitPOST = retrofitAPI.login(new Login("dbs_config2", "Mqwert18!", "NT_TEST1"));
+
+        try {
+
+            response = retrofitPOST.execute();
+
+            if(response.isSuccessful() && response.code() == 200){
+                Log.i("ResponseSize", "Cookie: " + response.headers().values("Set-Cookie").toArray()[0]);
+                return response.headers().values("Set-Cookie").toArray()[0].toString();
+            }
+            else{
+                return null;
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.i("ResponseSize", "Size: Retrofit -- " + e.toString());
+        }
+
+        return null;
+
+    }
+
+    public static String getWarehouses(String cookie){
+
+        RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
+        Call retrofitPOST = retrofitAPI.getWarehouses(cookie);
+
+        try {
+
+            response = retrofitPOST.execute();
+
+            if(response.isSuccessful() && response.code() == 200){
+                Log.i("getWarehouses", "Warehouses: " + response.body());
+                return response.body().toString();
+            }
+            else if(response.code() == 401){
+                login();
+
+                if(response.isSuccessful() && response.code() == 200){
+                    Log.i("getWarehouses", "Warehouses: " + response.body());
+                    return response.body().toString();
+                }
+
+                return null;
+            }
+            else
+                return null;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.i("getWarehouses", "Error: " + e.toString());
+        }
+
+        return null;
+
+    }
+
+    public static String getCartonSystemNumber(String cookie, String serialNumber){
+
+        String url = "SerialNumberDetails?$select=SystemNumber &$filter=SerialNumber eq '" + serialNumber + "'";
+
+        RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
+        Call retrofitGET = retrofitAPI.getCartonAndSystemNumber(cookie, url);
+
+        try {
+
+            response = retrofitGET.execute();
+
+            if(response.isSuccessful() && response.code() == 200){
+                Log.i("ScanningProcess", "SystemNumber: " + response.body());
+                return response.body().toString();
+            }
+            else if(response.code() == 401){
+                login();
+
+                if(response.isSuccessful() && response.code() == 200){
+                    Log.i("ScanningProcess", "SystemNumber: " + response.body());
+                    return response.body().toString();
+                }
+
+                return null;
+            }
+            else
+                return null;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.i("ScanningProcess", "Sys# Error: " + e.toString());
+        }
+
+        return null;
+
+    }
+
+    public static String getBinLocationAbsEntryNumber(String cookie, String stackLocation){
+
+        String url = "BinLocations?$select=AbsEntry &$filter=Sublevel1 eq '" + stackLocation + "'";
+
+        RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
+        Call retrofitGET = retrofitAPI.getBinLocationAbsEntryNumber(cookie, url);
+
+        try {
+
+            response = retrofitGET.execute();
+
+            if(response.isSuccessful() && response.code() == 200){
+                Log.i("ScanningProcess", "BinLocationAbsEntryNumber: " + response.body());
+                return response.body().toString();
+            }
+            else if(response.code() == 401){
+
+                login();
+
+                if(response.isSuccessful() && response.code() == 200){
+                    Log.i("ScanningProcess", "BinLocationAbsEntryNumber: " + response.body());
+                    return response.body().toString();
+                }
+
+                return null;
+            }
+            else
+                return null;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.i("ScanningProcess", "BinLocationAbsEntry# Error: " + e.toString());
+        }
+
+        return null;
+
+    }
+
+    public static boolean stockTransfer(String cookie, StockTransfer stockTransfer){
+
+        Log.i("ScanningProcess", new Gson().toJson(stockTransfer));
+        Log.i("ScanningProcess", "called");
+
+        RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
+        Call retrofitGET = retrofitAPI.stockTransfer(cookie, stockTransfer);
+
+        try {
+
+            response = retrofitGET.execute();
+
+            if(response.isSuccessful() && response.code() == 201){
+                return true;
+            }
+            else if(response.code() == 401){
+
+                login();
+
+                if(response.isSuccessful() && response.code() == 201){
+                    return true;
+                }
+
+                return false;
+            }
+            else
+                return false;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.i("ScanningProcess", "StockTransfer Error: " + e.toString());
+        }
+
+        return false;
+
+    }
+
+    public static String getSalesOrders(String cookie, String warehouseCode){
+
+        String url = "$crossjoin(Orders,Orders/DocumentLines)?$expand=Orders($select=CardCode, CardName,DocEntry), " +
+                "Orders/DocumentLines($select=ItemCode,Quantity) &$filter=Orders/DocEntry eq Orders/DocumentLines/DocEntry and " +
+                "Orders/DocumentLines/WarehouseCode  eq '" + warehouseCode + "'";
+
+        RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
+        Call retrofitGET = retrofitAPI.getSalesOrdersList(cookie, url);
+
+        try {
+
+            response = retrofitGET.execute();
+
+            if(response.isSuccessful() && response.code() == 200){
+                Log.i("ScanningProcess", "SalesOrders: " + response.body());
+                return response.body().toString();
+            }
+            else if(response.code() == 401){
+
+                login();
+
+                if(response.isSuccessful() && response.code() == 200){
+                    Log.i("ScanningProcess", "SalesOrders: " + response.body());
+                    return response.body().toString();
+                }
+
+                return null;
+            }
+            else
+                return null;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.i("ScanningProcess", "SalesOrders# Error: " + e.toString());
+        }
+
+        return null;
+
+    }
+
+}

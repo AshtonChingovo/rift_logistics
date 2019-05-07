@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.achingovo.inventory">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/logo"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        tools:ignore="GoogleAppIndexingWarning">
+        <receiver android:name=".Utilities.NewlandScanningReceiver.ScanReceiver">
+            <intent-filter>
+                <action android:name="nlscan.action.SCANNER_RESULT" />
+            </intent-filter>
+        </receiver>
+
+        <activity android:name=".App.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
+
+        <activity
+            android:name=".App.StockMovements.WarehouseLocations_Movements"
+            android:parentActivityName=".App.MainActivity" />
+        <activity
+            android:name=".App.StockMovements.Movement_Dashboard"
+            android:parentActivityName=".App.StockMovements.WarehouseLocations_Movements" />
+        <activity
+            android:name=".App.NewInventory.WarehouseLocations"
+            android:parentActivityName=".App.MainActivity" />
+        <activity
+            android:name=".App.NewInventory.Scanning"
+            android:parentActivityName=".App.NewInventory.WarehouseLocations" />
+        <activity
+            android:name=".App.StockMovements.Sale.SaleLandingPage"
+            android:parentActivityName=".App.StockMovements.Movement_Dashboard" />
+        <activity
+            android:name=".App.StockMovements.Transfers.CheckIn"
+            android:parentActivityName=".App.StockMovements.Movement_Dashboard" />
+        <activity
+            android:name=".App.StockMovements.Transfers.CheckOut"
+            android:parentActivityName=".App.StockMovements.Movement_Dashboard" />
+        <activity
+            android:name=".App.StockMovements.Transfers.Transfers_LandingPage"
+            android:parentActivityName=".App.StockMovements.Movement_Dashboard" />
+        <activity
+            android:name=".App.StockMovements.ProductionReturn.ProductionReturn"
+            android:parentActivityName=".App.StockMovements.Movement_Dashboard" />
+        <activity
+            android:name=".App.StockMovements.StockDisposals.StockDisposals"
+            android:parentActivityName=".App.StockMovements.Movement_Dashboard" />
+        <activity android:name=".App.StockMovements.Sale.Dispatch" />
+        <activity android:name=".App.StockMovements.Sale.MoveToDispatch" />
+        <activity android:name=".App.StockMovements.Transfers.WarehouseLocationsList" />
+        <activity android:name=".App.StockMovements.Transfers.InWarehouse" />
+        <activity android:name=".App.StockMovements.Transfers.MoveToDispatch" />
+        <activity
+            android:name=".App.StockMovements.Transfers.CheckOutOptions"
+            android:parentActivityName=".App.StockMovements.Transfers.Transfers_LandingPage" />
+        <activity android:name=".App.StockMovements.Sale.SalesOrdersList"></activity>
+    </application>
+
+</manifest>
