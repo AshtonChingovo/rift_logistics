@@ -83,12 +83,13 @@ public class SharedPreferencesClass {
     }
 
     // Active Sales Order Data
-    public static void writeSalesOrderData(String cardCode, int salesOrderQuantity, String itemCode, int docEntry){
+    public static void writeSalesOrderData(String cardCode, int salesOrderQuantity, String itemCode, int docEntry, String customerName){
 
         editor.putString(context.getString(R.string.salesOrderCardCodeSharedPreferences), cardCode);
         editor.putInt(context.getString(R.string.salesOrderQuantitySharedPreferences), salesOrderQuantity);
         editor.putString(context.getString(R.string.salesOrderItemCodeSharedPreferences), itemCode);
         editor.putInt(context.getString(R.string.salesOrderDocEntrySharedPreferences), docEntry);
+        editor.putString(context.getString(R.string.salesOrderCustomerNameSharedPreferences), customerName);
         editor.apply();
 
     }

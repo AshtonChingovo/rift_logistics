@@ -23,8 +23,6 @@ import com.example.achingovo.inventory.Utilities.SharedPreferences.SharedPrefere
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 public class Caption extends AppCompatActivity implements DeleteImageDialog.DeleteImage{
@@ -71,8 +69,6 @@ public class Caption extends AppCompatActivity implements DeleteImageDialog.Dele
                     // unixDate initially set to 0 and will be added from a report's unixDate
                     unixDate = 0;
 
-                    //GrowerId and visit Id are corrected in the Pictures in Activity
-                    //DispatchPictures(@NonNull String growerNumber, @NonNull String uri, @NonNull String date, @NonNull String caption, @NonNull int uploaded) {
                     Pictures.imagesList.add(new DispatchPictures(photoURI, date,
                             SharedPreferencesClass.getSalesOrderCustomerName(), 0));
 
@@ -82,6 +78,7 @@ public class Caption extends AppCompatActivity implements DeleteImageDialog.Dele
                     intent.putExtra("caption", imageCaption);
                     setResult(RESULT_OK,intent);
                     finish();
+
                 }
                 else
                     Toast.makeText(Caption.this, "Maximum number of pictures allowed reached", Toast.LENGTH_SHORT).show();

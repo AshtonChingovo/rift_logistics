@@ -138,7 +138,8 @@ public class SalesOrdersList extends AppCompatActivity {
                             salesOrderLists.get(getAdapterPosition()).getCardCode(),
                             salesOrderLists.get(getAdapterPosition()).getQuantity(),
                             salesOrderLists.get(getAdapterPosition()).getItemCode(),
-                            salesOrderLists.get(getAdapterPosition()).getDocEntry());
+                            salesOrderLists.get(getAdapterPosition()).getDocEntry(),
+                            salesOrderLists.get(getAdapterPosition()).getCardName());
 
                     Intent intent = new Intent(SalesOrdersList.this, SaleLandingPage.class);
                     startActivity(intent);
