@@ -5,6 +5,9 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -14,6 +17,22 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.example.achingovo.inventory.android.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <!-- Internet Broadcast Receiver -->
+        <receiver android:name=".Utilities.InternetBroadcastReceiver.InternetBroadcastReceiver">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
         <receiver android:name=".Utilities.NewlandScanningReceiver.ScanReceiver">
             <intent-filter>
                 <action android:name="nlscan.action.SCANNER_RESULT" />
@@ -64,13 +83,18 @@
             android:parentActivityName=".App.StockMovements.Movement_Dashboard" />
         <activity android:name=".App.StockMovements.Sale.Dispatch" />
         <activity android:name=".App.StockMovements.Sale.MoveToDispatch" />
+        <activity android:name=".App.StockMovements.Sale.MoveToFumigation" />
         <activity android:name=".App.StockMovements.Transfers.WarehouseLocationsList" />
         <activity android:name=".App.StockMovements.Transfers.InWarehouse" />
         <activity android:name=".App.StockMovements.Transfers.MoveToDispatch" />
         <activity
             android:name=".App.StockMovements.Transfers.CheckOutOptions"
             android:parentActivityName=".App.StockMovements.Transfers.Transfers_LandingPage" />
-        <activity android:name=".App.StockMovements.Sale.SalesOrdersList"></activity>
+        <activity android:name=".App.StockMovements.Sale.SalesOrdersList" />
+        <activity android:name=".App.StockMovements.Sale.Pictures.Pictures" />
+        <activity android:name=".App.StockMovements.Sale.Pictures.Caption" />
+        <activity android:name=".App.StockMovements.Sale.Pictures.ViewPicture" />
+        <activity android:name=".App.StockMovements.Sale.Pictures.PicturesList"></activity>
     </application>
 
 </manifest>

@@ -20,7 +20,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/stackLocation"
+        android:id="@+id/location"
         android:layout_width="70dp"
         android:layout_height="100dp"
         android:layout_marginStart="4dp"
@@ -45,11 +45,11 @@
         android:text="B"
         android:textSize="56sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@+id/stackLocation"
-        app:layout_constraintEnd_toStartOf="@+id/stackLocation"
+        app:layout_constraintBottom_toBottomOf="@+id/location"
+        app:layout_constraintEnd_toStartOf="@+id/location"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/stackLocation" />
+        app:layout_constraintTop_toTopOf="@+id/location" />
 
 </android.support.constraint.ConstraintLayout>

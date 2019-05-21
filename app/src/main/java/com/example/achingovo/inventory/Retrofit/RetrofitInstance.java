@@ -2,9 +2,14 @@ package com.example.achingovo.inventory.Retrofit;
 
 import android.util.Log;
 
+import com.example.achingovo.inventory.Repository.B1_Objects.SalesOrder.DeliveryDocument;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransfer;
+import com.example.achingovo.inventory.Repository.Entity.ManufactoringSerialNumber;
 import com.example.achingovo.inventory.Utilities.Login.Login;
 import com.google.gson.Gson;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 
@@ -28,6 +33,7 @@ public class RetrofitInstance {
     *  Methods to upload reports to the server
     * */
     private static Response response = null;
+    private static Response patchResponse = null;
     String loginResponse;
 
     public static Retrofit getRetrofit(){
@@ -190,7 +196,8 @@ public class RetrofitInstance {
 
     public static String getBinLocationAbsEntryNumber(String cookie, String stackLocation){
 
-        String url = "BinLocations?$select=AbsEntry &$filter=Sublevel1 eq '" + stackLocation + "'";
+        //String url = "BinLocations?$select=AbsEntry &$filter=Sublevel1 eq '" + stackLocation + "'";
+        String url = "BinLocations?$select=AbsEntry &$filter=BinCode eq '" + stackLocation + "'";
 
         RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
         Call retrofitGET = retrofitAPI.getBinLocationAbsEntryNumber(cookie, url);
@@ -266,7 +273,7 @@ public class RetrofitInstance {
     public static String getSalesOrders(String cookie, String warehouseCode){
 
         String url = "$crossjoin(Orders,Orders/DocumentLines)?$expand=Orders($select=CardCode, CardName,DocEntry), " +
-                "Orders/DocumentLines($select=ItemCode,Quantity) &$filter=Orders/DocEntry eq Orders/DocumentLines/DocEntry and " +
+                "Orders/DocumentLines($select=ItemCode,Quantity,RemainingOpenQuantity) &$filter=Orders/DocEntry eq Orders/DocumentLines/DocEntry and " +
                 "Orders/DocumentLines/WarehouseCode  eq '" + warehouseCode + "'";
 
         RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
@@ -297,6 +304,132 @@ public class RetrofitInstance {
         } catch (IOException e) {
             e.printStackTrace();
             Log.i("ScanningProcess", "SalesOrders# Error: " + e.toString());
+        }
+
+        return null;
+
+    }
+
+    public static Boolean setShippingCaseNumber(String cookie, String serialNumber, int shippingCaseNumber){
+
+        String url = "SerialNumberDetails?$select = DocEntry &$filter=SerialNumber eq '" + serialNumber + "'";
+
+        RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
+
+        Call retrofitPatch;
+        Call retrofitGET = retrofitAPI.getSerialNumberId(cookie, url);
+
+        try {
+
+            response = retrofitGET.execute();
+
+            if(response.isSuccessful() && response.code() == 200){
+
+                Log.i("ScanningProcess", "setShippingCaseNumber: " + response.body());
+
+                JSONObject jsonObject = new JSONObject(response.body().toString());
+
+                Log.i("ScanningProcess", "values: " + jsonObject.getJSONArray("value").getJSONObject(0).getInt("DocEntry"));
+
+                if(jsonObject == null || jsonObject.getJSONArray("value") == null || jsonObject.getJSONArray("value").length() == 0)
+                    return false;
+
+                retrofitPatch = retrofitAPI.patchShippingCaseNumber(cookie, jsonObject.getJSONArray("value").getJSONObject(0).getInt("DocEntry"), new ManufactoringSerialNumber(shippingCaseNumber));
+
+                patchResponse = retrofitPatch.execute();
+
+                if(patchResponse.code() == 204){
+
+                    return true;
+
+                }
+
+            }
+            else
+                return false;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.i("ScanningProcess", "setShippingCaseNumber Error: " + e.toString());
+        }
+
+        return false;
+
+    }
+
+    public static String getSerialNumber(String cookie, String serialNumber){
+
+        String url = "SerialNumberDetails?$filter=SerialNumber eq '" + serialNumber + "'";
+
+        RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
+
+        Call retrofitGET = retrofitAPI.getSerialNumber(cookie, url);
+
+        try {
+
+            response = retrofitGET.execute();
+
+            if(response.isSuccessful() && response.code() == 200){
+
+                return response.body().toString();
+
+            }
+            else
+                return null;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.i("ScanningProcess", "setShippingCaseNumber Error: " + e.toString());
+        }
+
+        return null;
+
+    }
+
+    public static boolean createDeliveryNote(String cookie, DeliveryDocument deliveryDocument){
+
+        RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
+
+        Call retrofitGET = retrofitAPI.createDeliveryNote(cookie, deliveryDocument);
+
+        try {
+
+            response = retrofitGET.execute();
+
+            if(response.isSuccessful() && response.code() == 201)
+                return true;
+            else
+                return false;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.i("ScanningProcess", "setShippingCaseNumber Error: " + e.toString());
+        }
+
+        return false;
+
+    }
+
+    public static String getSalesOrdersQuantity(String cookie, int docEntry){
+
+        String url = "$crossjoin(Orders,Orders/DocumentLines)?$expand=Orders/DocumentLines($select=Quantity) &$filter=Orders/DocEntry eq Orders/DocumentLines/DocEntry and Orders/DocEntry  eq "+ docEntry +"";
+
+        RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
+
+        Call retrofitGET = retrofitAPI.getSalesOrderQuantity(cookie, url);
+
+        try {
+
+            response = retrofitGET.execute();
+
+            if(response.isSuccessful() && response.code() == 200)
+                return response.body().toString();
+            else
+                return null;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.i("ScanningProcess", "setShippingCaseNumber Error: " + e.toString());
         }
 
         return null;

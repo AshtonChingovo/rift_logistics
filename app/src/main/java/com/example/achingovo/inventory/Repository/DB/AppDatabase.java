@@ -5,21 +5,26 @@ import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
 import android.content.Context;
 
-import com.example.achingovo.inventory.Repository.Dao.WarehousesDao;
-import com.example.achingovo.inventory.Repository.Entity.Warehouses;
+import com.example.achingovo.inventory.Repository.Dao.DispatchPicturesDao;
+import com.example.achingovo.inventory.Repository.Entity.DispatchPictures;
 
-//@Database(entities = {Warehouses.class}, version = 1, exportSchema = false)
-    public abstract class AppDatabase extends RoomDatabase {
-        /*public abstract WarehousesDao warehousesDao();
 
-        public static volatile AppDatabase DATABASE;
+@Database(entities = {DispatchPictures.class},
+        version = 1, exportSchema = false)
+public abstract class AppDatabase extends RoomDatabase {
 
-        public static AppDatabase getDatabase(Context context){
+    public abstract DispatchPicturesDao dispatchPicturesDao();
 
-            if(DATABASE == null){
-                DATABASE = Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, "rvc_database").build();
-            }
+    public static volatile AppDatabase DATABASE;
 
-            return DATABASE;
-        }*/
+    public static AppDatabase getDatabase(Context context){
+
+        if(DATABASE == null){
+            DATABASE = Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, "logistics_database").build();
+        }
+
+        return DATABASE;
+
+    }
 }
+

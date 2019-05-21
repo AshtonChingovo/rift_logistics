@@ -55,7 +55,7 @@ public class MoveToDispatch extends AppCompatActivity{
         toolbar = findViewById(R.id.toolbar);
         backgroundImage = findViewById(R.id.backgroundImage);
         recyclerView = findViewById(R.id.recyclerView);
-        stackLocation = findViewById(R.id.stackLocation);
+        stackLocation = findViewById(R.id.location);
 
         toolbar.setTitle("DISPATCH-AREA");
         stackLocation.setText("DISPATCH-AREA");

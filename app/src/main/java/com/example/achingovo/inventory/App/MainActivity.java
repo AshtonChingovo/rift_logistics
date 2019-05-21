@@ -49,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
     }
 
     public class Login extends AsyncTask<Void, Void, Void> {
@@ -64,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
             return null;
 
         }
+
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
@@ -75,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "Error", Toast.LENGTH_SHORT).show();
             }
         }
+
     }
 
 }

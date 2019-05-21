@@ -58,7 +58,7 @@ public class InWarehouse extends AppCompatActivity implements StackLocationDialo
         toolbar = findViewById(R.id.toolbar);
         backgroundImage = findViewById(R.id.backgroundImage);
         recyclerView = findViewById(R.id.recyclerView);
-        stackLocation = findViewById(R.id.stackLocation);
+        stackLocation = findViewById(R.id.location);
 
         stockTransferType = getIntent().getStringExtra("option");
 

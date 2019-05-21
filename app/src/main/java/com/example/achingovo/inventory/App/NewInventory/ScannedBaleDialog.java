@@ -17,7 +17,7 @@ public class ScannedBaleDialog extends DialogFragment {
     String barcodeNumber;
     String warehouseCode;
     TextView barcode;
-    TextView stackLocation;
+    TextView location;
     ScanDialog mListener;
 
     @NonNull
@@ -29,7 +29,7 @@ public class ScannedBaleDialog extends DialogFragment {
         View view = getActivity().getLayoutInflater().inflate(R.layout.scan_dialog, null);
 
         barcode = view.findViewById(R.id.barcode);
-        stackLocation = view.findViewById(R.id.stackLocation);
+        location = view.findViewById(R.id.location);
 
         barcodeNumber = getArguments().getString("barcode");
         warehouseCode = getArguments().getString("warehouseCode");
@@ -42,8 +42,8 @@ public class ScannedBaleDialog extends DialogFragment {
 
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        if(barcodeNumber != null && !stackLocation.getText().toString().equals(""))
-                            mListener.ScanDialogOkClicked(barcodeNumber, stackLocation.getText().toString(), warehouseCode);
+                        if(barcodeNumber != null && !location.getText().toString().equals(""))
+                            mListener.ScanDialogOkClicked(barcodeNumber, location.getText().toString(), warehouseCode);
 
                     }
                 });

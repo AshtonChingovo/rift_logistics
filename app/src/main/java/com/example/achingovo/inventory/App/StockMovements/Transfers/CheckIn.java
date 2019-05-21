@@ -39,7 +39,6 @@ public class CheckIn extends AppCompatActivity {
     RecyclerView recyclerView;
     TextView stackLocation;
     ImageView backgroundImage;
-
     IntentFilter mFilter;
     BroadcastReceiver mReceiver;
 
@@ -54,10 +53,12 @@ public class CheckIn extends AppCompatActivity {
         toolbar = findViewById(R.id.toolbar);
         backgroundImage = findViewById(R.id.backgroundImage);
         recyclerView = findViewById(R.id.recyclerView);
-        stackLocation = findViewById(R.id.stackLocation);
+        stackLocation = findViewById(R.id.location);
 
         recyclerView.setAdapter(new RecyclerViewAdapter());
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        stackLocation.setVisibility(View.INVISIBLE);
 
 /*        setSupportActionBar(toolbar);
 

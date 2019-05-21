@@ -33,7 +33,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MoveToDispatch extends AppCompatActivity {
+public class MoveToDispatch extends AppCompatActivity{
 
     Toolbar toolbar;
     RecyclerView recyclerView;
@@ -143,7 +143,7 @@ public class MoveToDispatch extends AppCompatActivity {
         String downloadedSystemNumber;
         String downloadedBinLocationAbsEntry;
 
-        String stackLocation = "FUM";
+        String stackLocation;
 
         StockTransfer stockTransferObj;
 
@@ -156,6 +156,7 @@ public class MoveToDispatch extends AppCompatActivity {
 
             // Get scanned carton's system number
             downloadedSystemNumber = RetrofitInstance.getCartonSystemNumber(SharedPreferencesClass.getCookie(), values[0]);
+            stackLocation = SharedPreferencesClass.getWarehouseCode() + "-DISPATCH";
 
             if(downloadedSystemNumber != null){
                 try {
@@ -241,7 +242,7 @@ public class MoveToDispatch extends AppCompatActivity {
         // All stock movements first go to the TRANSIT warehouse
         String warehouseCode = SharedPreferencesClass.getWarehouseCode();
         String fromWarehouse = SharedPreferencesClass.getWarehouseCode();
-        String itemCode = "BO3";
+        String itemCode = SharedPreferencesClass.getSalesOrderItemCode();
         int quantity = 1;
         String allowNegativeQuantity = "tNO";
         int serialAndBatchNumbersBaseLine = 0;

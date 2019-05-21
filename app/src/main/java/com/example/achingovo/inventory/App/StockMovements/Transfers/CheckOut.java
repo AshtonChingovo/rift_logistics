@@ -57,7 +57,7 @@ public class CheckOut extends AppCompatActivity implements StackLocationDialog.S
         toolbar = findViewById(R.id.toolbar);
         backgroundImage = findViewById(R.id.backgroundImage);
         recyclerView = findViewById(R.id.recyclerView);
-        movementType = findViewById(R.id.stackLocation);
+        movementType = findViewById(R.id.location);
 
         recyclerView.setAdapter(new RecyclerViewAdapter());
         recyclerView.setLayoutManager(new LinearLayoutManager(this));

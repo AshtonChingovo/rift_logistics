@@ -3,6 +3,7 @@ package com.example.achingovo.inventory.Utilities.SharedPreferences;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.util.Log;
 
 import com.example.achingovo.inventory.R;
 
@@ -19,22 +20,22 @@ public class SharedPreferencesClass {
 
     public static void writeCredentials(){
 
-        editor.putString(context.getString(R.string.cookie), "");
-        editor.putString(context.getString(R.string.cookie), "");
-        editor.putString(context.getString(R.string.cookie), "");
+        editor.putString(context.getString(R.string.cookieSharedPreferences), "");
+        editor.putString(context.getString(R.string.cookieSharedPreferences), "");
+        editor.putString(context.getString(R.string.cookieSharedPreferences), "");
 
     }
 
     public static String getCookie(){
 
-        return sharedPref.getString(context.getString(R.string.cookie), null);
+        return sharedPref.getString(context.getString(R.string.cookieSharedPreferences), null);
 
     }
 
     public static boolean writeCookie(String responseVal){
 
         if(responseVal != null){
-            editor.putString(context.getString(R.string.cookie), responseVal);
+            editor.putString(context.getString(R.string.cookieSharedPreferences), responseVal);
             editor.apply();
             return true;
         }
@@ -47,7 +48,7 @@ public class SharedPreferencesClass {
     public static boolean writeWarehouseCode(String warehouseLocation){
 
         if(warehouseLocation != null){
-            editor.putString(context.getString(R.string.warehouseLocation), warehouseLocation);
+            editor.putString(context.getString(R.string.warehouseLocationSharedPreferences), warehouseLocation);
             editor.apply();
             return true;
         }
@@ -58,15 +59,15 @@ public class SharedPreferencesClass {
 
     public static String getWarehouseCode(){
 
-        return sharedPref.getString(context.getString(R.string.warehouseLocation), null);
+        return sharedPref.getString(context.getString(R.string.warehouseLocationSharedPreferences), null);
 
     }
 
-    // Active stack location * written to Shared Preference when entered by user *
+    // Active stack location * written to Shared Preference when entered by user * i.e InWarehouse
     public static boolean writeStackLocation(String stackLocation){
 
         if(stackLocation != null){
-            editor.putString(context.getString(R.string.stackLocation), stackLocation);
+            editor.putString(context.getString(R.string.stackLocationSharedPreferences), stackLocation);
             editor.apply();
             return true;
         }
@@ -77,8 +78,39 @@ public class SharedPreferencesClass {
 
     public static String getStackLocation(){
 
-        return sharedPref.getString(context.getString(R.string.stackLocation), null);
+        return sharedPref.getString(context.getString(R.string.stackLocationSharedPreferences), null);
 
+    }
+
+    // Active Sales Order Data
+    public static void writeSalesOrderData(String cardCode, int salesOrderQuantity, String itemCode, int docEntry){
+
+        editor.putString(context.getString(R.string.salesOrderCardCodeSharedPreferences), cardCode);
+        editor.putInt(context.getString(R.string.salesOrderQuantitySharedPreferences), salesOrderQuantity);
+        editor.putString(context.getString(R.string.salesOrderItemCodeSharedPreferences), itemCode);
+        editor.putInt(context.getString(R.string.salesOrderDocEntrySharedPreferences), docEntry);
+        editor.apply();
+
+    }
+
+    public static int getSalesOrderQuantity(){
+        return sharedPref.getInt(context.getString(R.string.salesOrderQuantitySharedPreferences), 0);
+    }
+
+    public static String getSalesOrderItemCode(){
+        return sharedPref.getString(context.getString(R.string.salesOrderItemCodeSharedPreferences), null);
+    }
+
+    public static String getSalesOrderCardCode(){
+        return String.valueOf(sharedPref.getString(context.getString(R.string.salesOrderCardCodeSharedPreferences), null));
+    }
+
+    public static int getSalesOrderDocEntry(){
+        return sharedPref.getInt(context.getString(R.string.salesOrderDocEntrySharedPreferences), 0);
+    }
+
+    public static String getSalesOrderCustomerName(){
+        return sharedPref.getString(context.getString(R.string.salesOrderCustomerNameSharedPreferences), null);
     }
 
 }

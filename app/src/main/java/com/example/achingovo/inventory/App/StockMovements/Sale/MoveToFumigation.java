@@ -4,8 +4,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -24,6 +27,7 @@ import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewIn
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransferLines;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransferLinesBinAllocations;
 import com.example.achingovo.inventory.Retrofit.RetrofitInstance;
+import com.example.achingovo.inventory.Utilities.InternetDialog.InternetDialog;
 import com.example.achingovo.inventory.Utilities.SharedPreferences.SharedPreferencesClass;
 
 import org.json.JSONArray;
@@ -33,7 +37,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MoveToFumigation extends AppCompatActivity {
+public class MoveToFumigation extends AppCompatActivity implements ShippingCaseNumberDialog.ScanDialog{
 
     Toolbar toolbar;
     RecyclerView recyclerView;
@@ -42,8 +46,11 @@ public class MoveToFumigation extends AppCompatActivity {
     String barcode;
 
     IntentFilter mFilter;
+    IntentFilter internetFilter;
     BroadcastReceiver mReceiver;
+    BroadcastReceiver internetReceiver;
 
+    DialogFragment dialog = new InternetDialog();
     List<String> barcodes = new ArrayList<>();
 
     @Override
@@ -75,14 +82,60 @@ public class MoveToFumigation extends AppCompatActivity {
                     return;
 
                 barcode = intent.getStringExtra("SCAN_BARCODE1");
-                new TransferStock().execute(intent.getStringExtra("SCAN_BARCODE1"));
+
+                Bundle args = new Bundle();
+                args.putString("barcode", intent.getStringExtra("SCAN_BARCODE1"));
+
+                DialogFragment dialog = new ShippingCaseNumberDialog();
+                dialog.setArguments(args);
+                dialog.show(getSupportFragmentManager(), "Dialog");
 
 
             }
         };
 
-        mFilter= new IntentFilter("nlscan.action.SCANNER_RESULT");
+        mFilter = new IntentFilter("nlscan.action.SCANNER_RESULT");
         this.registerReceiver(mReceiver, mFilter);
+
+        // Internet receiver
+        internetReceiver = new BroadcastReceiver() {
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                ConnectivityManager cm = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+
+                boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+
+                if(!isConnected){
+                    dialog.setCancelable(false);
+                    dialog.show(getSupportFragmentManager(), "Dialog");
+                }
+                else{
+                    if(dialog.getFragmentManager() != null){
+                        try{
+                            dialog.dismiss();
+                        }catch (Exception e){
+
+                        }
+                    }
+                }
+            }
+        };
+
+        internetFilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
+        this.registerReceiver(internetReceiver, internetFilter);
+
+    }
+
+    @Override
+    public void ScanDialogOkClicked(String serialNumber, String shippingCaseNumber) {
+        new TransferStock().execute(serialNumber, shippingCaseNumber);
+    }
+
+    @Override
+    public void ScanDialogCancelClicked() {
 
     }
 
@@ -143,7 +196,7 @@ public class MoveToFumigation extends AppCompatActivity {
         String downloadedSystemNumber;
         String downloadedBinLocationAbsEntry;
 
-        String stackLocation = "FUMIGATION";
+        String stackLocation;
 
         StockTransfer stockTransferObj;
 
@@ -156,6 +209,15 @@ public class MoveToFumigation extends AppCompatActivity {
 
             // Get scanned carton's system number
             downloadedSystemNumber = RetrofitInstance.getCartonSystemNumber(SharedPreferencesClass.getCookie(), values[0]);
+
+            stackLocation = SharedPreferencesClass.getWarehouseCode() + "-FUMIGATION";
+
+            // Add shipping case number to serial number
+            if(!RetrofitInstance.setShippingCaseNumber(SharedPreferencesClass.getCookie(), values[0], Integer.valueOf(values[1].trim()))) {
+                barcode = values[0];
+                stockTransferResponse = false;
+                return null;
+            }
 
             if(downloadedSystemNumber != null){
                 try {
@@ -238,10 +300,9 @@ public class MoveToFumigation extends AppCompatActivity {
 
     public StockTransfer generateStockTransfersJson(int systemNumber, int binAbsEntry){
 
-        // All stock movements first go to the TRANSIT warehouse
         String warehouseCode = SharedPreferencesClass.getWarehouseCode();
         String fromWarehouse = SharedPreferencesClass.getWarehouseCode();
-        String itemCode = "BO3";
+        String itemCode = SharedPreferencesClass.getSalesOrderItemCode();
         int quantity = 1;
         String allowNegativeQuantity = "tNO";
         int serialAndBatchNumbersBaseLine = 0;

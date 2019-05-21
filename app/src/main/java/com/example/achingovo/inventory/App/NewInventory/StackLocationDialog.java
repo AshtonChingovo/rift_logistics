@@ -30,7 +30,7 @@ public class StackLocationDialog extends DialogFragment {
         View view = getActivity().getLayoutInflater().inflate(R.layout.stack_location_dialog, null);
 
         stackLocationCode = view.findViewById(R.id.stackLocationCode);
-        stackLocation = view.findViewById(R.id.stackLocation);
+        stackLocation = view.findViewById(R.id.location);
 
         switch(SharedPreferencesClass.getWarehouseCode()){
             case "LOGBAY10":

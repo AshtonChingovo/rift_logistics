@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.achingovo.inventory.App.StockMovements.WarehouseLocations_Movements;
 import com.example.achingovo.inventory.R;
 import com.example.achingovo.inventory.Repository.B1_Objects.SalesOrder.SalesOrderList;
 import com.example.achingovo.inventory.Retrofit.RetrofitInstance;
@@ -49,8 +48,6 @@ public class SalesOrdersList extends AppCompatActivity {
         actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setHomeAsUpIndicator(R.drawable.back);
 
-        new GetSalesOrdersList().execute();
-
     }
 
     public class GetSalesOrdersList extends AsyncTask<Void, Void, Void> {
@@ -60,8 +57,10 @@ public class SalesOrdersList extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids) {
 
-            responseVal = RetrofitInstance.getSalesOrders(SharedPreferencesClass.getCookie(), SharedPreferencesClass.getWarehouseCode().trim().toUpperCase());
+            if(SharedPreferencesClass.context == null)
+                SharedPreferencesClass.context = SalesOrdersList.this;
 
+            responseVal = RetrofitInstance.getSalesOrders(SharedPreferencesClass.getCookie(), SharedPreferencesClass.getWarehouseCode().trim().toUpperCase());
 
             if(responseVal != null){
                 JSONObject jsonObject;
@@ -75,15 +74,16 @@ public class SalesOrdersList extends AppCompatActivity {
                         JSONObject ordersObject = jsonArray.getJSONObject(i).getJSONObject("Orders");
                         JSONObject ordersDocumentLinesObject = jsonArray.getJSONObject(i).getJSONObject("Orders/DocumentLines");
 
-                        Log.i("GetItList", "CardCode: " + ordersObject.getString("CardCode") + " CardName: " + ordersObject.getString("CardName"));
-                        //Log.i("GetItList", "Quantity: " + Integer.valueOf(ordersDocumentLinesObject.getString("Quantity")));
-
-                        salesOrderLists.add(new SalesOrderList(ordersObject.getString("CardCode"), ordersObject.getString("CardName"), ordersDocumentLinesObject.getInt("Quantity")));
+                        salesOrderLists.add(new SalesOrderList(ordersObject.getString("CardCode"),
+                                ordersObject.getString("CardName"),
+                                ordersDocumentLinesObject.getString("ItemCode"),
+                                ordersDocumentLinesObject.getInt("Quantity") == ordersDocumentLinesObject.getInt("RemainingOpenQuantity") ? ordersDocumentLinesObject.getInt("Quantity"): ordersDocumentLinesObject.getInt("RemainingOpenQuantity"),
+                                ordersObject.getInt("DocEntry")));
 
                     }
 
                 } catch (JSONException e) {
-                    Log.i("Locationss", "Error: " + e.toString());
+                    Log.i("Locations", "Error: " + e.toString());
                     e.printStackTrace();
                 }
             }
@@ -133,6 +133,13 @@ public class SalesOrdersList extends AppCompatActivity {
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+
+                    SharedPreferencesClass.writeSalesOrderData(
+                            salesOrderLists.get(getAdapterPosition()).getCardCode(),
+                            salesOrderLists.get(getAdapterPosition()).getQuantity(),
+                            salesOrderLists.get(getAdapterPosition()).getItemCode(),
+                            salesOrderLists.get(getAdapterPosition()).getDocEntry());
+
                     Intent intent = new Intent(SalesOrdersList.this, SaleLandingPage.class);
                     startActivity(intent);
                 }
@@ -147,5 +154,15 @@ public class SalesOrdersList extends AppCompatActivity {
 
         }
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        salesOrderLists.clear();
+
+        new GetSalesOrdersList().execute();
+    }
+
 
 }

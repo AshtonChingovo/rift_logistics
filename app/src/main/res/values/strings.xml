@@ -1,8 +1,15 @@
 <resources>
     <string name="app_name">Inventory</string>
+
     <string name="sharedPrefsName">com.example.achingovo.inventory.sharedPreferencesName</string>
-    <string name="cookie">cookie</string>
-    <string name="warehouseLocation">warehouseLocation</string>
-    <string name="activeWarehouseCode">activeWarehouseCode</string>
-    <string name="stackLocation">stackLocation</string>
+    <string name="cookieSharedPreferences">cookie</string>
+    <string name="warehouseLocationSharedPreferences">warehouseLocation</string>
+    <string name="activeWarehouseCodeSharedPreferences">activeWarehouseCode</string>
+    <string name="stackLocationSharedPreferences">stackLocation</string>
+    <string name="salesOrderQuantitySharedPreferences">salesOrderQuantity</string>
+    <string name="salesOrderItemCodeSharedPreferences">salesOrderItemCode</string>
+    <string name="salesOrderCardCodeSharedPreferences">salesOrderCardCode</string>
+    <string name="salesOrderDocEntrySharedPreferences">salesOrderDocEntry</string>
+    <string name="salesOrderCustomerNameSharedPreferences">salesOrderCustomerName</string>
+
 </resources>

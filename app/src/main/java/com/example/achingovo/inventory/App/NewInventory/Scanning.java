@@ -5,9 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -22,7 +22,6 @@ import android.widget.Toast;
 import com.example.achingovo.inventory.Repository.B1_Objects.SerialNumbers;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransfer;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransferLines;
-import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransferLinesBinAllocations;
 import com.example.achingovo.inventory.R;
 import com.example.achingovo.inventory.Retrofit.RetrofitInstance;
 import com.example.achingovo.inventory.Utilities.SharedPreferences.SharedPreferencesClass;
@@ -62,7 +61,7 @@ public class Scanning extends AppCompatActivity implements ScannedBaleDialog.Sca
         toolbar = findViewById(R.id.toolbar);
         backgroundImage = findViewById(R.id.backgroundImage);
         recyclerView = findViewById(R.id.recyclerView);
-        stackLocation = findViewById(R.id.stackLocation);
+        stackLocation = findViewById(R.id.location);
 
         warehouseName = getIntent().getStringExtra("warehouseName");
         warehouseCode = getIntent().getStringExtra("code");
@@ -79,7 +78,7 @@ public class Scanning extends AppCompatActivity implements ScannedBaleDialog.Sca
 
         }*/
 
-/*        stackLocation.setOnClickListener(new View.OnClickListener() {
+/*        location.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 DialogFragment dialog = new StackLocationDialog();
@@ -98,9 +97,7 @@ public class Scanning extends AppCompatActivity implements ScannedBaleDialog.Sca
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-
                 try{
-
                     if(intent.getStringExtra("SCAN_BARCODE1") == null)
                         return;
 
@@ -110,7 +107,6 @@ public class Scanning extends AppCompatActivity implements ScannedBaleDialog.Sca
                 }catch (Exception e){
                     Toast.makeText(Scanning.this, "Operation failed please try again", Toast.LENGTH_SHORT).show();
                 }
-
             }
         };
 
@@ -229,7 +225,6 @@ public class Scanning extends AppCompatActivity implements ScannedBaleDialog.Sca
             downloadedSystemNumber = RetrofitInstance.getCartonSystemNumber(SharedPreferencesClass.getCookie(), values[0]);
 
             if(downloadedSystemNumber != null){
-
                 try {
 
                     jsonObject = new JSONObject(downloadedSystemNumber);
