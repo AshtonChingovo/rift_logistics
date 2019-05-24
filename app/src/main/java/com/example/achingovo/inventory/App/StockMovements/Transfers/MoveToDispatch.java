@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,11 +40,11 @@ public class MoveToDispatch extends AppCompatActivity{
     RecyclerView recyclerView;
     TextView stackLocation;
     ImageView backgroundImage;
-
+    ProgressBar progressBar;
     IntentFilter mFilter;
     BroadcastReceiver mReceiver;
 
-    final String DISPATCH_AREA = "DISPATCH-AREA";
+    final String DISPATCH_AREA = SharedPreferencesClass.getWarehouseCode() + "-" + "DISPATCH";
     String barcode;
     List<String> barcodes = new ArrayList<>();
 
@@ -56,6 +57,7 @@ public class MoveToDispatch extends AppCompatActivity{
         backgroundImage = findViewById(R.id.backgroundImage);
         recyclerView = findViewById(R.id.recyclerView);
         stackLocation = findViewById(R.id.location);
+        progressBar = findViewById(R.id.progressBar);
 
         toolbar.setTitle("DISPATCH-AREA");
         stackLocation.setText("DISPATCH-AREA");
@@ -63,7 +65,7 @@ public class MoveToDispatch extends AppCompatActivity{
         recyclerView.setAdapter(new RecyclerViewAdapter());
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-/*        setSupportActionBar(toolbar);
+/*      setSupportActionBar(toolbar);
 
         ActionBar actionbar = getSupportActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true);
@@ -81,6 +83,11 @@ public class MoveToDispatch extends AppCompatActivity{
 
                 if(intent.getStringExtra("SCAN_BARCODE1") == null)
                     return;
+
+                backgroundImage.setVisibility(View.INVISIBLE);
+                progressBar.setVisibility(View.VISIBLE);
+
+                unregisterReceiver(mReceiver);
 
                 barcode = intent.getStringExtra("SCAN_BARCODE1");
                 new TransferStock().execute(intent.getStringExtra("SCAN_BARCODE1"));
@@ -157,8 +164,6 @@ public class MoveToDispatch extends AppCompatActivity{
         @Override
         protected Void doInBackground(String... values) {
 
-            MoveToDispatch.this.unregisterReceiver(mReceiver);
-
             // Get scanned carton's system number
             downloadedSystemNumber = RetrofitInstance.getCartonSystemNumber(SharedPreferencesClass.getCookie(), values[0]);
 
@@ -209,32 +214,27 @@ public class MoveToDispatch extends AppCompatActivity{
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
+            progressBar.setVisibility(View.INVISIBLE);
+
             if(stockTransferResponse){
 
                 barcodes.add(0, barcode);
-
-                if(barcodes.size() > 0)
-                    backgroundImage.setVisibility(View.INVISIBLE);
-                else
-                    backgroundImage.setVisibility(View.VISIBLE);
-
-                recyclerView.getAdapter().notifyDataSetChanged();
 
             }
             else{
 
                 barcodes.add(0, "B_" + barcode);
 
-                if(barcodes.size() > 0)
-                    backgroundImage.setVisibility(View.INVISIBLE);
-                else
-                    backgroundImage.setVisibility(View.VISIBLE);
-
-                recyclerView.getAdapter().notifyDataSetChanged();
-
                 Toast.makeText(MoveToDispatch.this, "Operation failed to complete, try again", Toast.LENGTH_SHORT).show();
 
             }
+
+            if(barcodes.size() > 0)
+                backgroundImage.setVisibility(View.INVISIBLE);
+            else
+                backgroundImage.setVisibility(View.VISIBLE);
+
+            recyclerView.getAdapter().notifyDataSetChanged();
 
             MoveToDispatch.this.registerReceiver(mReceiver, mFilter);
 

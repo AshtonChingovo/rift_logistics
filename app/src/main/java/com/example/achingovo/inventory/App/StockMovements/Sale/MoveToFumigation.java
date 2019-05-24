@@ -4,8 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -18,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,7 +26,6 @@ import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewIn
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransferLines;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransferLinesBinAllocations;
 import com.example.achingovo.inventory.Retrofit.RetrofitInstance;
-import com.example.achingovo.inventory.Utilities.InternetDialog.InternetDialog;
 import com.example.achingovo.inventory.Utilities.SharedPreferences.SharedPreferencesClass;
 
 import org.json.JSONArray;
@@ -42,15 +40,13 @@ public class MoveToFumigation extends AppCompatActivity implements ShippingCaseN
     Toolbar toolbar;
     RecyclerView recyclerView;
     ImageView backgroundImage;
+    ProgressBar progressBar;
 
     String barcode;
 
     IntentFilter mFilter;
-    IntentFilter internetFilter;
     BroadcastReceiver mReceiver;
-    BroadcastReceiver internetReceiver;
 
-    DialogFragment dialog = new InternetDialog();
     List<String> barcodes = new ArrayList<>();
 
     @Override
@@ -61,6 +57,7 @@ public class MoveToFumigation extends AppCompatActivity implements ShippingCaseN
         toolbar = findViewById(R.id.toolbar);
         backgroundImage = findViewById(R.id.backgroundImage);
         recyclerView = findViewById(R.id.recyclerView);
+        progressBar = findViewById(R.id.progressBar);
 
         setSupportActionBar(toolbar);
 
@@ -81,6 +78,11 @@ public class MoveToFumigation extends AppCompatActivity implements ShippingCaseN
                 if(intent.getStringExtra("SCAN_BARCODE1") == null)
                     return;
 
+                backgroundImage.setVisibility(View.INVISIBLE);
+                progressBar.setVisibility(View.VISIBLE);
+
+                unregisterReceiver(mReceiver);
+
                 barcode = intent.getStringExtra("SCAN_BARCODE1");
 
                 Bundle args = new Bundle();
@@ -96,36 +98,6 @@ public class MoveToFumigation extends AppCompatActivity implements ShippingCaseN
 
         mFilter = new IntentFilter("nlscan.action.SCANNER_RESULT");
         this.registerReceiver(mReceiver, mFilter);
-
-        // Internet receiver
-        internetReceiver = new BroadcastReceiver() {
-
-            @Override
-            public void onReceive(Context context, Intent intent) {
-
-                ConnectivityManager cm = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
-                NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-
-                boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
-
-                if(!isConnected){
-                    dialog.setCancelable(false);
-                    dialog.show(getSupportFragmentManager(), "Dialog");
-                }
-                else{
-                    if(dialog.getFragmentManager() != null){
-                        try{
-                            dialog.dismiss();
-                        }catch (Exception e){
-
-                        }
-                    }
-                }
-            }
-        };
-
-        internetFilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
-        this.registerReceiver(internetReceiver, internetFilter);
 
     }
 
@@ -205,8 +177,6 @@ public class MoveToFumigation extends AppCompatActivity implements ShippingCaseN
         @Override
         protected Void doInBackground(String... values) {
 
-            MoveToFumigation.this.unregisterReceiver(mReceiver);
-
             // Get scanned carton's system number
             downloadedSystemNumber = RetrofitInstance.getCartonSystemNumber(SharedPreferencesClass.getCookie(), values[0]);
 
@@ -266,32 +236,28 @@ public class MoveToFumigation extends AppCompatActivity implements ShippingCaseN
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
+            progressBar.setVisibility(View.INVISIBLE);
+
             if(stockTransferResponse){
 
                 barcodes.add(0, barcode);
-
-                if(barcodes.size() > 0)
-                    backgroundImage.setVisibility(View.INVISIBLE);
-                else
-                    backgroundImage.setVisibility(View.VISIBLE);
-
-                recyclerView.getAdapter().notifyDataSetChanged();
 
             }
             else{
 
                 barcodes.add(0, "B_" + barcode);
 
-                if(barcodes.size() > 0)
-                    backgroundImage.setVisibility(View.INVISIBLE);
-                else
-                    backgroundImage.setVisibility(View.VISIBLE);
-
-                recyclerView.getAdapter().notifyDataSetChanged();
 
                 Toast.makeText(MoveToFumigation.this, "Operation failed to complete, try again", Toast.LENGTH_SHORT).show();
 
             }
+
+            if(barcodes.size() > 0)
+                backgroundImage.setVisibility(View.INVISIBLE);
+            else
+                backgroundImage.setVisibility(View.VISIBLE);
+
+            recyclerView.getAdapter().notifyDataSetChanged();
 
             MoveToFumigation.this.registerReceiver(mReceiver, mFilter);
 

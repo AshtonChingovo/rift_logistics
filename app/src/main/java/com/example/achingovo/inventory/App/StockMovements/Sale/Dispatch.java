@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,6 +45,7 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
     RecyclerView recyclerView;
     TextView count;
     ImageView backgroundImage;
+    ProgressBar progressBar;
     IntentFilter mFilter;
     BroadcastReceiver mReceiver;
 
@@ -57,6 +59,7 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
         toolbar = findViewById(R.id.toolbar);
         backgroundImage = findViewById(R.id.backgroundImage);
         recyclerView = findViewById(R.id.recyclerView);
+        progressBar = findViewById(R.id.progressBar);
         count = findViewById(R.id.count);
 
         recyclerView.setAdapter(new RecyclerViewAdapter());
@@ -85,7 +88,14 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
                 if(intent.getStringExtra("SCAN_BARCODE1") == null)
                     return;
                 else{
+
+                    backgroundImage.setVisibility(View.INVISIBLE);
+                    progressBar.setVisibility(View.VISIBLE);
+
+                    unregisterReceiver(mReceiver);
+
                     new CheckSerialNumber().execute(intent.getStringExtra("SCAN_BARCODE1"));
+
                 }
             }
         };
@@ -124,14 +134,6 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
             barcode = itemView.findViewById(R.id.barcode);
             barcodeImg = itemView.findViewById(R.id.barcodeImg);
             delete = itemView.findViewById(R.id.delete);
-
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(Dispatch.this, Scanning.class);
-                    startActivity(intent);
-                }
-            });
 
             delete.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -180,6 +182,11 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         super.onOptionsItemSelected(item);
+
+        if(barcodes.size() != SharedPreferencesClass.getSalesOrderQuantity()){
+            Toast.makeText(this, SharedPreferencesClass.getSalesOrderQuantity() + " required to Dispatch" , Toast.LENGTH_SHORT).show();
+            return true;
+        }
 
         if(barcodes.size() > 0){
             DialogFragment dialog = new DispatchDialog();
@@ -241,6 +248,8 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
+            progressBar.setVisibility(View.INVISIBLE);
+
             if(max)
                 Toast.makeText(Dispatch.this, "Maximum number of cartons reached", Toast.LENGTH_SHORT).show();
 
@@ -259,6 +268,8 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
 
             count.setText(barcodes.size() + "/" + SharedPreferencesClass.getSalesOrderQuantity());
             recyclerView.getAdapter().notifyDataSetChanged();
+
+            Dispatch.this.registerReceiver(mReceiver, mFilter);
 
         }
     }
@@ -306,6 +317,8 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
+            progressBar.setVisibility(View.INVISIBLE);
+
             if(deliveryCreated){
                 Toast.makeText(Dispatch.this, "Goods successfully dispatched", Toast.LENGTH_SHORT).show();
                 finish();
@@ -316,7 +329,10 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
 
     @Override
     public void dispatchDialogOkClicked() {
+
+        progressBar.setVisibility(View.VISIBLE);
         new CreateDeliveryNote().execute();
+
     }
 
 

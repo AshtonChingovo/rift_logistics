@@ -39,7 +39,7 @@ import com.example.achingovo.inventory.Repository.DB.AppDatabase;
 import com.example.achingovo.inventory.Repository.Dao.DispatchPicturesDao;
 import com.example.achingovo.inventory.Repository.Entity.DispatchPictures;
 import com.example.achingovo.inventory.Utilities.ExitDialog;
-import com.example.achingovo.inventory.Utilities.UploadReports.InternetBroadcastReceiver;
+import com.example.achingovo.inventory.Utilities.UploadPictures.InternetBroadcastReceiver;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -311,7 +311,7 @@ public class Pictures extends AppCompatActivity implements ExitDialog.ExitSave {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             finish();
-            if(val.length > 0){
+            if(val != null && val.length > 0){
                 InternetBroadcastReceiver.StartReportUploading(getApplicationContext());
                 Toast.makeText(getApplicationContext(), "Pictures saved", Toast.LENGTH_SHORT).show();
             }

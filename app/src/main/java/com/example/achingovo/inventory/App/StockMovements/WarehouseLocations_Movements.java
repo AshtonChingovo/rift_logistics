@@ -12,8 +12,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.achingovo.inventory.App.NewInventory.WarehouseLocations;
 import com.example.achingovo.inventory.R;
 import com.example.achingovo.inventory.Repository.Entity.Warehouses;
 import com.example.achingovo.inventory.Retrofit.RetrofitInstance;
@@ -29,7 +33,11 @@ import java.util.List;
 public class WarehouseLocations_Movements extends AppCompatActivity {
 
     Toolbar toolbar;
+    ProgressBar progressBar;
     RecyclerView recyclerView;
+    TextView label;
+    Button retry;
+
     List<Warehouses> warehouses = new ArrayList<>();
 
     Bundle args = new Bundle();
@@ -43,6 +51,9 @@ public class WarehouseLocations_Movements extends AppCompatActivity {
 
         toolbar = findViewById(R.id.toolbar);
         recyclerView = findViewById(R.id.recyclerView);
+        progressBar = findViewById(R.id.progressBar);
+        retry = findViewById(R.id.retry);
+        label = findViewById(R.id.label);
 
         setSupportActionBar(toolbar);
 
@@ -109,7 +120,7 @@ public class WarehouseLocations_Movements extends AppCompatActivity {
             responseVal = RetrofitInstance.getWarehouses(SharedPreferencesClass.getCookie());
 
             if(responseVal != null){
-                JSONObject jsonObject = null;
+                JSONObject jsonObject;
                 try {
 
                     jsonObject = new JSONObject(responseVal);
@@ -121,7 +132,7 @@ public class WarehouseLocations_Movements extends AppCompatActivity {
                     }
 
                 } catch (JSONException e) {
-                    Log.i("Locationss", "Error: " + e.toString());
+                    Log.i("Locations", "Error: " + e.toString());
                     e.printStackTrace();
                 }
             }
@@ -134,8 +145,31 @@ public class WarehouseLocations_Movements extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            recyclerView.setAdapter(new RecyclerViewAdapter());
-            recyclerView.setLayoutManager(new LinearLayoutManager(WarehouseLocations_Movements.this));
+            if(warehouses.size() > 0){
+                progressBar.setVisibility(View.INVISIBLE);
+                recyclerView.setAdapter(new RecyclerViewAdapter());
+                recyclerView.setLayoutManager(new LinearLayoutManager(WarehouseLocations_Movements.this));
+            }
+            else{
+
+                progressBar.setVisibility(View.INVISIBLE);
+                label.setVisibility(View.VISIBLE);
+                label.setText("No Warehouses Found");
+                retry.setVisibility(View.VISIBLE);
+
+                retry.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        progressBar.setVisibility(View.VISIBLE);
+                        label.setVisibility(View.INVISIBLE);
+                        retry.setVisibility(View.INVISIBLE);
+
+                        new GetWarehouseLocations().execute();
+                    }
+                });
+
+            }
 
         }
     }

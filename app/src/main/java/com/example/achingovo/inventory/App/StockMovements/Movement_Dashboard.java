@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.Toast;
 
 import com.example.achingovo.inventory.App.StockMovements.ProductionReturn.ProductionReturn;
 import com.example.achingovo.inventory.App.StockMovements.Sale.SaleLandingPage;
@@ -14,8 +15,11 @@ import com.example.achingovo.inventory.App.StockMovements.Sale.SalesOrdersList;
 import com.example.achingovo.inventory.App.StockMovements.StockDisposals.StockDisposals;
 import com.example.achingovo.inventory.App.StockMovements.Transfers.Transfers_LandingPage;
 import com.example.achingovo.inventory.R;
+import com.example.achingovo.inventory.Utilities.SharedPreferences.SharedPreferencesClass;
 
 public class Movement_Dashboard extends AppCompatActivity {
+
+    final String LOGBAY10 = "LOGBAY10";
 
     Toolbar toolbar;
     CardView sale;
@@ -37,8 +41,15 @@ public class Movement_Dashboard extends AppCompatActivity {
         sale.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if(SharedPreferencesClass.getWarehouseCode().equals(LOGBAY10)){
+                    Toast.makeText(Movement_Dashboard.this, "Operation not applicable to BAY 10", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 Intent intent = new Intent(Movement_Dashboard.this, SalesOrdersList.class);
                 startActivity(intent);
+
             }
         });
 

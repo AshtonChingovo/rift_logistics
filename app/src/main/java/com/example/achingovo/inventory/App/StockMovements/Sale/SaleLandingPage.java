@@ -10,10 +10,12 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.example.achingovo.inventory.App.StockMovements.Sale.Pictures.Pictures;
 import com.example.achingovo.inventory.App.StockMovements.Sale.Pictures.PicturesList;
 import com.example.achingovo.inventory.R;
+import com.example.achingovo.inventory.Utilities.SharedPreferences.SharedPreferencesClass;
 
 public class SaleLandingPage extends AppCompatActivity {
 
@@ -36,6 +38,11 @@ public class SaleLandingPage extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+                if(SharedPreferencesClass.getSalesOrderQuantity() == 0){
+                    Toast.makeText(SaleLandingPage.this, "No Cartons are required", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 Intent intent = new Intent(SaleLandingPage.this, MoveToFumigation.class);
                 startActivity(intent);
 
@@ -46,6 +53,12 @@ public class SaleLandingPage extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+                if(SharedPreferencesClass.getSalesOrderQuantity() == 0){
+                    Toast.makeText(SaleLandingPage.this, "No Cartons are required", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+
                 Intent intent = new Intent(SaleLandingPage.this, MoveToDispatch.class);
                 startActivity(intent);
 
@@ -55,6 +68,11 @@ public class SaleLandingPage extends AppCompatActivity {
         dispatch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if(SharedPreferencesClass.getSalesOrderQuantity() == 0){
+                    Toast.makeText(SaleLandingPage.this, "No Cartons are required", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
                 Intent intent = new Intent(SaleLandingPage.this, Dispatch.class);
                 startActivity(intent);

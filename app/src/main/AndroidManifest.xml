@@ -39,13 +39,14 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".App.MainActivity">
+        <activity android:name=".Utilities.Login.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".App.MainActivity"></activity>
 
         <meta-data
             android:name="preloaded_fonts"
@@ -88,13 +89,16 @@
         <activity android:name=".App.StockMovements.Transfers.InWarehouse" />
         <activity android:name=".App.StockMovements.Transfers.MoveToDispatch" />
         <activity
-            android:name=".App.StockMovements.Transfers.CheckOutOptions"
+            android:name=".App.StockMovements.Transfers.CheckOutLandingPage"
             android:parentActivityName=".App.StockMovements.Transfers.Transfers_LandingPage" />
         <activity android:name=".App.StockMovements.Sale.SalesOrdersList" />
         <activity android:name=".App.StockMovements.Sale.Pictures.Pictures" />
         <activity android:name=".App.StockMovements.Sale.Pictures.Caption" />
         <activity android:name=".App.StockMovements.Sale.Pictures.ViewPicture" />
-        <activity android:name=".App.StockMovements.Sale.Pictures.PicturesList"></activity>
+        <activity android:name=".App.StockMovements.Sale.Pictures.PicturesList" />
+        <activity android:name=".App.PicturesNotUploadedList" />
+        <activity android:name=".Utilities.NoConnection"
+            android:launchMode="singleTop"/>
     </application>
 
 </manifest>

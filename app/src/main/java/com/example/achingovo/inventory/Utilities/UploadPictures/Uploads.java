@@ -1,4 +1,4 @@
-package com.example.achingovo.inventory.Utilities.UploadReports;
+package com.example.achingovo.inventory.Utilities.UploadPictures;
 
 import android.app.IntentService;
 import android.content.Context;
@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.example.achingovo.inventory.Repository.DB.AppDatabase;
 import com.example.achingovo.inventory.Repository.Entity.DispatchPictures;
+import com.example.achingovo.inventory.Retrofit.RetrofitInstance;
 
 import java.util.HashMap;
 import java.util.List;
@@ -84,23 +85,17 @@ public class Uploads extends IntentService {
 
         database = AppDatabase.getDatabase(getApplicationContext());
 
-
-
-    }
-
-    // Get visit Id for uploaded reports i.e where status == 1
-    public void getValidSchedules() {
-
-
+        uploadImages();
 
     }
 
-    public boolean uploadImages(int visitId){
+    public boolean uploadImages(){
+
+        RetrofitInstance.uploadPicturesToSAP(database.dispatchPicturesDao().getAllDispatchPictures());
 
         return true;
 
     }
-
 
     /**
      * Handle action Foo in the provided background thread with the provided

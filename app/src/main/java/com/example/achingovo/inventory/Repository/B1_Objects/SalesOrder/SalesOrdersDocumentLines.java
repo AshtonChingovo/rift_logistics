@@ -14,6 +14,7 @@ public class SalesOrdersDocumentLines {
 
     public SalesOrdersDocumentLines(String itemCode, String warehouseCode, int quantity, int baseType, int baseEntry, int baseLine,
                                     List<SalesOrderDocumentLinesSerialNumbers> serialNumbers) {
+
         ItemCode = itemCode;
         WarehouseCode = warehouseCode;
         Quantity = quantity;
@@ -21,6 +22,7 @@ public class SalesOrdersDocumentLines {
         BaseEntry = baseEntry;
         BaseLine = baseLine;
         SerialNumbers = serialNumbers;
+
     }
 
     public String getItemCode() {

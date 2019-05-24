@@ -3,15 +3,18 @@ package com.example.achingovo.inventory.Retrofit;
 import android.util.Log;
 
 import com.example.achingovo.inventory.Repository.B1_Objects.SalesOrder.DeliveryDocument;
+import com.example.achingovo.inventory.Repository.B1_Objects.StockDisposals.DocumentLines;
+import com.example.achingovo.inventory.Repository.B1_Objects.StockDisposals.StockDisposalsEntity;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransfer;
+import com.example.achingovo.inventory.Repository.Entity.DispatchPictures;
 import com.example.achingovo.inventory.Repository.Entity.ManufactoringSerialNumber;
 import com.example.achingovo.inventory.Utilities.Login.Login;
 import com.google.gson.Gson;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -96,17 +99,16 @@ public class RetrofitInstance {
 
     }
 
-    public static String login(){
+    public static String login(Login login){
 
         RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
-        Call retrofitPOST = retrofitAPI.login(new Login("dbs_config2", "Mqwert18!", "NT_TEST1"));
+        Call retrofitPOST = retrofitAPI.login(login);
 
         try {
 
             response = retrofitPOST.execute();
 
             if(response.isSuccessful() && response.code() == 200){
-                Log.i("ResponseSize", "Cookie: " + response.headers().values("Set-Cookie").toArray()[0]);
                 return response.headers().values("Set-Cookie").toArray()[0].toString();
             }
             else{
@@ -136,7 +138,6 @@ public class RetrofitInstance {
                 return response.body().toString();
             }
             else if(response.code() == 401){
-                login();
 
                 if(response.isSuccessful() && response.code() == 200){
                     Log.i("getWarehouses", "Warehouses: " + response.body());
@@ -159,7 +160,7 @@ public class RetrofitInstance {
 
     public static String getCartonSystemNumber(String cookie, String serialNumber){
 
-        String url = "SerialNumberDetails?$select=SystemNumber &$filter=SerialNumber eq '" + serialNumber + "'";
+        String url = "SerialNumberDetails?$filter=SerialNumber eq '" + serialNumber + "'";
 
         RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
         Call retrofitGET = retrofitAPI.getCartonAndSystemNumber(cookie, url);
@@ -173,7 +174,6 @@ public class RetrofitInstance {
                 return response.body().toString();
             }
             else if(response.code() == 401){
-                login();
 
                 if(response.isSuccessful() && response.code() == 200){
                     Log.i("ScanningProcess", "SystemNumber: " + response.body());
@@ -212,8 +212,6 @@ public class RetrofitInstance {
             }
             else if(response.code() == 401){
 
-                login();
-
                 if(response.isSuccessful() && response.code() == 200){
                     Log.i("ScanningProcess", "BinLocationAbsEntryNumber: " + response.body());
                     return response.body().toString();
@@ -250,8 +248,6 @@ public class RetrofitInstance {
             }
             else if(response.code() == 401){
 
-                login();
-
                 if(response.isSuccessful() && response.code() == 201){
                     return true;
                 }
@@ -274,7 +270,7 @@ public class RetrofitInstance {
 
         String url = "$crossjoin(Orders,Orders/DocumentLines)?$expand=Orders($select=CardCode, CardName,DocEntry), " +
                 "Orders/DocumentLines($select=ItemCode,Quantity,RemainingOpenQuantity) &$filter=Orders/DocEntry eq Orders/DocumentLines/DocEntry and " +
-                "Orders/DocumentLines/WarehouseCode  eq '" + warehouseCode + "'";
+                "Orders/DocumentLines/WarehouseCode  eq '" + warehouseCode + "' &$orderby=Orders/DocumentStatus desc, Orders/DocEntry desc";
 
         RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
         Call retrofitGET = retrofitAPI.getSalesOrdersList(cookie, url);
@@ -288,8 +284,6 @@ public class RetrofitInstance {
                 return response.body().toString();
             }
             else if(response.code() == 401){
-
-                login();
 
                 if(response.isSuccessful() && response.code() == 200){
                     Log.i("ScanningProcess", "SalesOrders: " + response.body());
@@ -433,6 +427,34 @@ public class RetrofitInstance {
         }
 
         return null;
+
+    }
+
+    public static boolean uploadPicturesToSAP(List<DispatchPictures> dispatchPictures){
+        return true;
+    }
+
+    public static boolean stockDisposal(String cookie, DocumentLines stockDisposalEntities){
+
+        RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
+
+        Call retrofitGET = retrofitAPI.stockDisposal(cookie, stockDisposalEntities);
+
+        try {
+
+            response = retrofitGET.execute();
+
+            if(response.isSuccessful() && response.code() == 201)
+                return true;
+            else
+                return false;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.i("ScanningProcess", "setShippingCaseNumber Error: " + e.toString());
+        }
+
+        return false;
 
     }
 

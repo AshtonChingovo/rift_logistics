@@ -3,6 +3,9 @@
 
     <string name="sharedPrefsName">com.example.achingovo.inventory.sharedPreferencesName</string>
     <string name="cookieSharedPreferences">cookie</string>
+    <string name="userNameSharedPreferences">username</string>
+    <string name="passwordSharedPreferences">password</string>
+    <string name="companyDBSharedPreferences">companyDB</string>
     <string name="warehouseLocationSharedPreferences">warehouseLocation</string>
     <string name="activeWarehouseCodeSharedPreferences">activeWarehouseCode</string>
     <string name="stackLocationSharedPreferences">stackLocation</string>

@@ -8,7 +8,7 @@ import android.view.View;
 
 import com.example.achingovo.inventory.R;
 
-public class CheckOutOptions extends AppCompatActivity {
+public class CheckOutLandingPage extends AppCompatActivity {
 
     CardView moveToDispatch;
     CardView moveOut;
@@ -25,7 +25,7 @@ public class CheckOutOptions extends AppCompatActivity {
         moveToDispatch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(CheckOutOptions.this, MoveToDispatch.class);
+                Intent intent = new Intent(CheckOutLandingPage.this, MoveToDispatch.class);
                 startActivity(intent);
             }
         });
@@ -33,7 +33,7 @@ public class CheckOutOptions extends AppCompatActivity {
         moveOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(CheckOutOptions.this, WarehouseLocationsList.class);
+                Intent intent = new Intent(CheckOutLandingPage.this, WarehouseLocationsList.class);
                 startActivity(intent);
             }
         });

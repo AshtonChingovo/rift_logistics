@@ -9,6 +9,7 @@ import android.support.v4.app.DialogFragment;
 import android.util.Log;
 
 import com.example.achingovo.inventory.App.StockMovements.Sale.DispatchDialog;
+import com.example.achingovo.inventory.Utilities.NoConnection;
 
 public class InternetBroadcastReceiver extends BroadcastReceiver {
 
@@ -17,7 +18,9 @@ public class InternetBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if(!checkConnectivity(context)){
-            DialogFragment dialog = new DispatchDialog();
+            Intent connectionIntent = new Intent(context, NoConnection.class);
+            connectionIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.getApplicationContext().startActivity(connectionIntent);
         }
     }
 
@@ -34,6 +37,10 @@ public class InternetBroadcastReceiver extends BroadcastReceiver {
             serviceIntent = null;
             return false;
         }
+    }
+
+    public static void uploadPictures(){
+
     }
 
 }

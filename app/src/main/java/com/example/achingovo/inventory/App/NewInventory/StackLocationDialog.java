@@ -37,7 +37,7 @@ public class StackLocationDialog extends DialogFragment {
                 aisleCode = "B-";
                 break;
             case "LOGNAW":
-                aisleCode = "NA-";
+                aisleCode = "A";
                 break;
             case "LOGVOS1":
                 aisleCode = "VE-";

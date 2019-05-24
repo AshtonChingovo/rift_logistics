@@ -12,6 +12,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.achingovo.inventory.R;
@@ -30,6 +32,9 @@ public class SalesOrdersList extends AppCompatActivity {
 
     Toolbar toolbar;
     RecyclerView recyclerView;
+    ProgressBar progressBar;
+    TextView label;
+    Button retry;
     List<SalesOrderList> salesOrderLists = new ArrayList<>();
 
     @Override
@@ -38,7 +43,11 @@ public class SalesOrdersList extends AppCompatActivity {
         setContentView(R.layout.recyclerview);
 
         toolbar = findViewById(R.id.toolbar);
+        progressBar = findViewById(R.id.progressBar);
         recyclerView = findViewById(R.id.recyclerView);
+        progressBar = findViewById(R.id.progressBar);
+        retry = findViewById(R.id.retry);
+        label = findViewById(R.id.label);
 
         setSupportActionBar(toolbar);
 
@@ -96,8 +105,32 @@ public class SalesOrdersList extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            recyclerView.setAdapter(new RecyclerViewAdapter());
-            recyclerView.setLayoutManager(new LinearLayoutManager(SalesOrdersList.this));
+            if(salesOrderLists.size() > 0){
+                progressBar.setVisibility(View.INVISIBLE);
+                recyclerView.setAdapter(new RecyclerViewAdapter());
+                recyclerView.setLayoutManager(new LinearLayoutManager(SalesOrdersList.this));
+            }
+            else{
+
+                progressBar.setVisibility(View.INVISIBLE);
+                label.setVisibility(View.VISIBLE);
+                label.setText("No Sales Found");
+                retry.setVisibility(View.VISIBLE);
+
+                retry.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        retry.setVisibility(View.INVISIBLE);
+                        progressBar.setVisibility(View.VISIBLE);
+                        label.setVisibility(View.INVISIBLE);
+
+                        new GetSalesOrdersList().execute();
+
+                    }
+                });
+
+            }
 
         }
     }
@@ -143,6 +176,10 @@ public class SalesOrdersList extends AppCompatActivity {
 
                     Intent intent = new Intent(SalesOrdersList.this, SaleLandingPage.class);
                     startActivity(intent);
+
+                    salesOrderLists.clear();
+                    recyclerView.getAdapter().notifyDataSetChanged();
+
                 }
             });
 
@@ -160,9 +197,12 @@ public class SalesOrdersList extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        progressBar.setVisibility(View.VISIBLE);
+
         salesOrderLists.clear();
 
         new GetSalesOrdersList().execute();
+
     }
 
 

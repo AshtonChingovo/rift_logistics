@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,9 +39,8 @@ public class MoveToDispatch extends AppCompatActivity{
     Toolbar toolbar;
     RecyclerView recyclerView;
     ImageView backgroundImage;
-
+    ProgressBar progressBar;
     String barcode;
-
     IntentFilter mFilter;
     BroadcastReceiver mReceiver;
 
@@ -54,6 +54,8 @@ public class MoveToDispatch extends AppCompatActivity{
         toolbar = findViewById(R.id.toolbar);
         backgroundImage = findViewById(R.id.backgroundImage);
         recyclerView = findViewById(R.id.recyclerView);
+        progressBar = findViewById(R.id.progressBar);
+
 
         setSupportActionBar(toolbar);
 
@@ -74,9 +76,13 @@ public class MoveToDispatch extends AppCompatActivity{
                 if(intent.getStringExtra("SCAN_BARCODE1") == null)
                     return;
 
+                backgroundImage.setVisibility(View.INVISIBLE);
+                progressBar.setVisibility(View.VISIBLE);
+
+                unregisterReceiver(mReceiver);
+
                 barcode = intent.getStringExtra("SCAN_BARCODE1");
                 new TransferStock().execute(intent.getStringExtra("SCAN_BARCODE1"));
-
 
             }
         };
@@ -152,8 +158,6 @@ public class MoveToDispatch extends AppCompatActivity{
         @Override
         protected Void doInBackground(String... values) {
 
-            MoveToDispatch.this.unregisterReceiver(mReceiver);
-
             // Get scanned carton's system number
             downloadedSystemNumber = RetrofitInstance.getCartonSystemNumber(SharedPreferencesClass.getCookie(), values[0]);
             stackLocation = SharedPreferencesClass.getWarehouseCode() + "-DISPATCH";
@@ -205,34 +209,30 @@ public class MoveToDispatch extends AppCompatActivity{
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
+            progressBar.setVisibility(View.INVISIBLE);
+
             if(stockTransferResponse){
 
                 barcodes.add(0, barcode);
-
-                if(barcodes.size() > 0)
-                    backgroundImage.setVisibility(View.INVISIBLE);
-                else
-                    backgroundImage.setVisibility(View.VISIBLE);
-
-                recyclerView.getAdapter().notifyDataSetChanged();
 
             }
             else{
 
                 barcodes.add(0, "B_" + barcode);
 
-                if(barcodes.size() > 0)
-                    backgroundImage.setVisibility(View.INVISIBLE);
-                else
-                    backgroundImage.setVisibility(View.VISIBLE);
-
-                recyclerView.getAdapter().notifyDataSetChanged();
-
                 Toast.makeText(MoveToDispatch.this, "Operation failed to complete, try again", Toast.LENGTH_SHORT).show();
 
             }
 
+            if(barcodes.size() > 0)
+                backgroundImage.setVisibility(View.INVISIBLE);
+            else
+                backgroundImage.setVisibility(View.VISIBLE);
+
+            recyclerView.getAdapter().notifyDataSetChanged();
+
             MoveToDispatch.this.registerReceiver(mReceiver, mFilter);
+
 
         }
     }

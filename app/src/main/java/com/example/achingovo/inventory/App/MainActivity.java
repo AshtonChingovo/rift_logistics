@@ -6,11 +6,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.achingovo.inventory.App.StockMovements.WarehouseLocations_Movements;
 import com.example.achingovo.inventory.App.NewInventory.WarehouseLocations;
 import com.example.achingovo.inventory.R;
+import com.example.achingovo.inventory.Repository.DB.AppDatabase;
 import com.example.achingovo.inventory.Retrofit.RetrofitInstance;
 import com.example.achingovo.inventory.Utilities.SharedPreferences.SharedPreferencesClass;
 
@@ -18,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
 
     CardView newInventory;
     CardView movement;
+    ImageView warningImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,13 +29,20 @@ public class MainActivity extends AppCompatActivity {
 
         newInventory = findViewById(R.id.newInventory);
         movement = findViewById(R.id.inWarehouseMovement);
+        warningImage = findViewById(R.id.warning);
 
-        // Set global context value
-        SharedPreferencesClass.context = this;
-        SharedPreferencesClass.setSharePreference();
+        warningImage.setVisibility(View.INVISIBLE);
 
-        // Login
-        new Login().execute();
+        warningImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, PicturesNotUploadedList.class);
+                startActivity(intent);
+            }
+        });
+
+        // Check for images
+        new GetPicturesNotUploaded().execute();
 
         newInventory.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -50,15 +60,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    public class GetPicturesNotUploaded extends AsyncTask<Void, Void, Void> {
 
-    public class Login extends AsyncTask<Void, Void, Void> {
-
-        String responseVal;
+        boolean picturesAvailable;
 
         @Override
         protected Void doInBackground(Void... voids) {
 
-            responseVal = RetrofitInstance.login();
+            if(AppDatabase.getDatabase(MainActivity.this).dispatchPicturesDao().getAllDispatchPictures().size() > 0)
+                picturesAvailable = true;
+            else
+                picturesAvailable = false;
 
             return null;
 
@@ -67,13 +79,9 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            if(responseVal != null){
-                if(SharedPreferencesClass.writeCookie(responseVal)){
 
-                }
-                else
-                    Toast.makeText(MainActivity.this, "Error", Toast.LENGTH_SHORT).show();
-            }
+            warningImage.setVisibility(picturesAvailable == true ? View.VISIBLE : View.INVISIBLE);
+
         }
 
     }

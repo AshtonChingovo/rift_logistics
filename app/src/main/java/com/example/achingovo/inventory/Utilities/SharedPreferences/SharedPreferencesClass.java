@@ -18,11 +18,12 @@ public class SharedPreferencesClass {
         editor = sharedPref.edit();
     }
 
-    public static void writeCredentials(){
+    public static void writeCredentials(String username, String password, String companyDB){
 
-        editor.putString(context.getString(R.string.cookieSharedPreferences), "");
-        editor.putString(context.getString(R.string.cookieSharedPreferences), "");
-        editor.putString(context.getString(R.string.cookieSharedPreferences), "");
+        editor.putString(context.getString(R.string.userNameSharedPreferences), username);
+        editor.putString(context.getString(R.string.passwordSharedPreferences), password);
+        editor.putString(context.getString(R.string.companyDBSharedPreferences), companyDB);
+        editor.apply();
 
     }
 

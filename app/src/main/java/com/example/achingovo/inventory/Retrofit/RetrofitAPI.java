@@ -1,10 +1,14 @@
 package com.example.achingovo.inventory.Retrofit;
 
 import com.example.achingovo.inventory.Repository.B1_Objects.SalesOrder.DeliveryDocument;
+import com.example.achingovo.inventory.Repository.B1_Objects.StockDisposals.DocumentLines;
+import com.example.achingovo.inventory.Repository.B1_Objects.StockDisposals.StockDisposalsEntity;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransfer;
 import com.example.achingovo.inventory.Repository.Entity.ManufactoringSerialNumber;
 import com.example.achingovo.inventory.Utilities.Login.Login;
 import com.google.gson.JsonObject;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -53,5 +57,8 @@ public interface RetrofitAPI {
 
     @POST("Orders{docEntry}/Close")
     Call<JsonObject> closeSalesOrder(@Header("Cookie") String cookie, @Path("docEntry") int docEntry);
+
+    @POST("InventoryGenExits")
+    Call<JsonObject> stockDisposal(@Header("Cookie") String cookie, @Body DocumentLines documentLines);
 
 }

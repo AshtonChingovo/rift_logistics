@@ -12,6 +12,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.achingovo.inventory.R;
@@ -30,6 +32,9 @@ public class WarehouseLocations extends AppCompatActivity {
 
     Toolbar toolbar;
     RecyclerView recyclerView;
+    ProgressBar progressBar;
+    TextView label;
+    Button retry;
     List<Warehouses> warehouses = new ArrayList<>();
 
     Bundle args = new Bundle();
@@ -43,6 +48,9 @@ public class WarehouseLocations extends AppCompatActivity {
 
         toolbar = findViewById(R.id.toolbar);
         recyclerView = findViewById(R.id.recyclerView);
+        retry = findViewById(R.id.retry);
+        progressBar = findViewById(R.id.progressBar);
+        label = findViewById(R.id.label);
 
         setSupportActionBar(toolbar);
 
@@ -133,8 +141,30 @@ public class WarehouseLocations extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            recyclerView.setAdapter(new RecyclerViewAdapter());
-            recyclerView.setLayoutManager(new LinearLayoutManager(WarehouseLocations.this));
+            if(warehouses.size() > 0){
+                progressBar.setVisibility(View.INVISIBLE);
+                recyclerView.setAdapter(new RecyclerViewAdapter());
+                recyclerView.setLayoutManager(new LinearLayoutManager(WarehouseLocations.this));
+            }
+            else{
+
+                progressBar.setVisibility(View.INVISIBLE);
+                label.setVisibility(View.VISIBLE);
+                label.setText("No Warehouses Found");
+                retry.setVisibility(View.VISIBLE);
+
+                retry.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        retry.setVisibility(View.INVISIBLE);
+                        progressBar.setVisibility(View.VISIBLE);
+                        label.setVisibility(View.INVISIBLE);
+
+                        new GetWarehouseLocations().execute();
+                    }
+                });
+
+            }
 
         }
     }

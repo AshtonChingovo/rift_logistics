@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,10 +42,9 @@ public class Scanning extends AppCompatActivity implements ScannedBaleDialog.Sca
     RecyclerView recyclerView;
     ImageView backgroundImage;
     TextView stackLocation;
-
+    ProgressBar progressBar;
     IntentFilter mFilter;
     BroadcastReceiver mReceiver;
-
     String barcode;
     String warehouseName;
     String systemNumber;
@@ -59,6 +59,7 @@ public class Scanning extends AppCompatActivity implements ScannedBaleDialog.Sca
         setContentView(R.layout.scanning);
 
         toolbar = findViewById(R.id.toolbar);
+        progressBar = findViewById(R.id.progressBar);
         backgroundImage = findViewById(R.id.backgroundImage);
         recyclerView = findViewById(R.id.recyclerView);
         stackLocation = findViewById(R.id.location);
@@ -71,24 +72,6 @@ public class Scanning extends AppCompatActivity implements ScannedBaleDialog.Sca
         if(warehouseName != null)
             toolbar.setTitle(warehouseName + " - Cartons");
 
-/*        if(activeStackLocation == null){
-
-            DialogFragment dialog = new StackLocationDialog();
-            dialog.show(getSupportFragmentManager(), "Dialog");
-
-        }*/
-
-/*        location.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DialogFragment dialog = new StackLocationDialog();
-                dialog.show(getSupportFragmentManager(), "Dialog");
-            }
-        });*/
-
-/*        ActionBar actionbar = getSupportActionBar();
-        actionbar.setDisplayHomeAsUpEnabled(true);
-        actionbar.setHomeAsUpIndicator(R.drawable.back);*/
 
         recyclerView.setAdapter(new RecyclerViewAdapter());
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -101,11 +84,17 @@ public class Scanning extends AppCompatActivity implements ScannedBaleDialog.Sca
                     if(intent.getStringExtra("SCAN_BARCODE1") == null)
                         return;
 
+                    backgroundImage.setVisibility(View.INVISIBLE);
+                    progressBar.setVisibility(View.VISIBLE);
+
                     barcode = intent.getStringExtra("SCAN_BARCODE1");
+
+                    unregisterReceiver(mReceiver);
+
                     new AddStockToWarehouse().execute(barcode, warehouseCode);
 
                 }catch (Exception e){
-                    Toast.makeText(Scanning.this, "Operation failed please try again", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Scanning.this, "Operation failed", Toast.LENGTH_SHORT).show();
                 }
             }
         };
@@ -235,21 +224,6 @@ public class Scanning extends AppCompatActivity implements ScannedBaleDialog.Sca
 
                     if(jsonArray.length() != 0){
 
-                        // Get scanned carton's data with BinLocationAbsEntry
-                        //downloadedBinLocationAbsEntry = RetrofitInstance.getBinLocationAbsEntryNumber(SharedPreferencesClass.getCookie(), SharedPreferencesClass.getStackLocation());
-
-                        /*if(downloadedBinLocationAbsEntry == null)
-                            return null;*/
-
-                        //jsonObject = new JSONObject(downloadedBinLocationAbsEntry);
-                        //jsonArray = jsonObject.getJSONArray("value");
-
-                        /*if(jsonArray.length() == 0)
-                            return null;*/
-
-                        // Extract scanned carton's BinLocationAbsEntry
-                        //downloadedBinLocationAbsEntry = jsonArray.getJSONObject(0).get("AbsEntry").toString();
-
                         Log.i("BinLocation", "Abs:" + downloadedBinLocationAbsEntry);
 
                         stockTransferObj = generateStockTransfersJson(new Integer(downloadedSystemNumber));
@@ -270,32 +244,27 @@ public class Scanning extends AppCompatActivity implements ScannedBaleDialog.Sca
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
+            progressBar.setVisibility(View.INVISIBLE);
+
             if(stockTransferResponse){
 
                 barcodes.add(0, barcode);
-
-                if(barcodes.size() > 0)
-                    backgroundImage.setVisibility(View.INVISIBLE);
-                else
-                    backgroundImage.setVisibility(View.VISIBLE);
-
-                recyclerView.getAdapter().notifyDataSetChanged();
 
             }
             else{
 
                 barcodes.add(0, "B_" + barcode);
 
-                if(barcodes.size() > 0)
-                    backgroundImage.setVisibility(View.INVISIBLE);
-                else
-                    backgroundImage.setVisibility(View.VISIBLE);
-
-                recyclerView.getAdapter().notifyDataSetChanged();
-
-                Toast.makeText(Scanning.this, "Operation failed to complete, try again", Toast.LENGTH_SHORT).show();
+                Toast.makeText(Scanning.this, "Operation failed to complete", Toast.LENGTH_SHORT).show();
 
             }
+
+            if(barcodes.size() > 0)
+                backgroundImage.setVisibility(View.INVISIBLE);
+            else
+                backgroundImage.setVisibility(View.VISIBLE);
+
+            recyclerView.getAdapter().notifyDataSetChanged();
 
             Scanning.this.registerReceiver(mReceiver, mFilter);
 

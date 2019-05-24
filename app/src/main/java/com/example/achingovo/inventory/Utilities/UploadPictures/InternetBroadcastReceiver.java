@@ -1,4 +1,4 @@
-package com.example.achingovo.inventory.Utilities.UploadReports;
+package com.example.achingovo.inventory.Utilities.UploadPictures;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

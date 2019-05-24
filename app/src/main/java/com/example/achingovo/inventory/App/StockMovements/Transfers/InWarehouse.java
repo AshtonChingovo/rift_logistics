@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,6 +45,7 @@ public class InWarehouse extends AppCompatActivity implements StackLocationDialo
 
     IntentFilter mFilter;
     BroadcastReceiver mReceiver;
+    ProgressBar progressBar;
 
     String activeStackLocation;
     String stockTransferType;
@@ -59,6 +61,7 @@ public class InWarehouse extends AppCompatActivity implements StackLocationDialo
         backgroundImage = findViewById(R.id.backgroundImage);
         recyclerView = findViewById(R.id.recyclerView);
         stackLocation = findViewById(R.id.location);
+        progressBar = findViewById(R.id.progressBar);
 
         stockTransferType = getIntent().getStringExtra("option");
 
@@ -101,6 +104,11 @@ public class InWarehouse extends AppCompatActivity implements StackLocationDialo
                 if(intent.getStringExtra("SCAN_BARCODE1") == null)
                     return;
 
+                backgroundImage.setVisibility(View.INVISIBLE);
+                progressBar.setVisibility(View.VISIBLE);
+
+                unregisterReceiver(mReceiver);
+
                 barcode = intent.getStringExtra("SCAN_BARCODE1");
                 new TransferStock().execute(intent.getStringExtra("SCAN_BARCODE1"));
 
@@ -123,7 +131,7 @@ public class InWarehouse extends AppCompatActivity implements StackLocationDialo
 
         }
 
-        SharedPreferencesClass.writeStackLocation((StackLocationDialog.aisleCode + stackLocation).trim().toUpperCase());
+        SharedPreferencesClass.writeStackLocation((SharedPreferencesClass.getWarehouseCode() + "-" + StackLocationDialog.aisleCode + stackLocation).trim().toUpperCase());
         this.stackLocation.setText(StackLocationDialog.aisleCode + stackLocation.trim().toUpperCase());
 
     }
@@ -197,8 +205,6 @@ public class InWarehouse extends AppCompatActivity implements StackLocationDialo
         @Override
         protected Void doInBackground(String... values) {
 
-            InWarehouse.this.unregisterReceiver(mReceiver);
-
             // Get scanned carton's system number
             downloadedSystemNumber = RetrofitInstance.getCartonSystemNumber(SharedPreferencesClass.getCookie(), values[0]);
 
@@ -249,32 +255,27 @@ public class InWarehouse extends AppCompatActivity implements StackLocationDialo
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
+            progressBar.setVisibility(View.INVISIBLE);
+
             if(stockTransferResponse){
 
                 barcodes.add(0, barcode);
-
-                if(barcodes.size() > 0)
-                    backgroundImage.setVisibility(View.INVISIBLE);
-                else
-                    backgroundImage.setVisibility(View.VISIBLE);
-
-                recyclerView.getAdapter().notifyDataSetChanged();
 
             }
             else{
 
                 barcodes.add(0, "B_" + barcode);
 
-                if(barcodes.size() > 0)
-                    backgroundImage.setVisibility(View.INVISIBLE);
-                else
-                    backgroundImage.setVisibility(View.VISIBLE);
-
-                recyclerView.getAdapter().notifyDataSetChanged();
-
                 Toast.makeText(InWarehouse.this, "Operation failed to complete, try again", Toast.LENGTH_SHORT).show();
 
             }
+
+            if(barcodes.size() > 0)
+                backgroundImage.setVisibility(View.INVISIBLE);
+            else
+                backgroundImage.setVisibility(View.VISIBLE);
+
+            recyclerView.getAdapter().notifyDataSetChanged();
 
             InWarehouse.this.registerReceiver(mReceiver, mFilter);
 

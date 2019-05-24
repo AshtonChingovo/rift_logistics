@@ -69,7 +69,7 @@ public class Transfers_LandingPage extends AppCompatActivity implements InterWar
             intent.putExtras(args);
         }
         else if(selectedOption.equals("Check-Out"))
-            intent = new Intent(Transfers_LandingPage.this, CheckOutOptions.class);
+            intent = new Intent(Transfers_LandingPage.this, CheckOutLandingPage.class);
         else
             return;
 

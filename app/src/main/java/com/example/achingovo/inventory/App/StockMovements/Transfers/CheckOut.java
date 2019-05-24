@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,7 +42,7 @@ public class CheckOut extends AppCompatActivity implements StackLocationDialog.S
     RecyclerView recyclerView;
     TextView movementType;
     ImageView backgroundImage;
-
+    ProgressBar progressBar;
     IntentFilter mFilter;
     BroadcastReceiver mReceiver;
 
@@ -57,6 +58,7 @@ public class CheckOut extends AppCompatActivity implements StackLocationDialog.S
         toolbar = findViewById(R.id.toolbar);
         backgroundImage = findViewById(R.id.backgroundImage);
         recyclerView = findViewById(R.id.recyclerView);
+        progressBar = findViewById(R.id.progressBar);
         movementType = findViewById(R.id.location);
 
         recyclerView.setAdapter(new RecyclerViewAdapter());
@@ -80,21 +82,15 @@ public class CheckOut extends AppCompatActivity implements StackLocationDialog.S
 
                 if(intent.getStringExtra("SCAN_BARCODE1") == null)
                     return;
-                else{
 
-                    barcode = intent.getStringExtra("SCAN_BARCODE1");
-                    new TransferStock().execute(intent.getStringExtra("SCAN_BARCODE1"));
+                backgroundImage.setVisibility(View.INVISIBLE);
+                progressBar.setVisibility(View.VISIBLE);
 
-/*                    if(barcodes.size() > 0) {
+                unregisterReceiver(mReceiver);
 
-                        if(barcodes.size() == 0){
-                            backgroundImage.setVisibility(View.VISIBLE);
-                            movementType.setVisibility(View.INVISIBLE);
-                        }
-                    }
-                    else
-                        backgroundImage.setVisibility(View.VISIBLE);*/
-                }
+                barcode = intent.getStringExtra("SCAN_BARCODE1");
+                new TransferStock().execute(intent.getStringExtra("SCAN_BARCODE1"));
+
             }
         };
 
@@ -164,19 +160,16 @@ public class CheckOut extends AppCompatActivity implements StackLocationDialog.S
     }
 
     public class TransferStock extends AsyncTask<String, Void, Void> {
+
         JSONObject jsonObject;
         JSONArray jsonArray;
-
         String downloadedSystemNumber;
-
         StockTransfer stockTransferObj;
 
         boolean stockTransferResponse = false;
 
         @Override
         protected Void doInBackground(String... values) {
-
-            CheckOut.this.unregisterReceiver(mReceiver);
 
             // Get scanned carton's system number
             downloadedSystemNumber = RetrofitInstance.getCartonSystemNumber(SharedPreferencesClass.getCookie(), values[0]);
@@ -212,20 +205,28 @@ public class CheckOut extends AppCompatActivity implements StackLocationDialog.S
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
+            progressBar.setVisibility(View.INVISIBLE);
+
             if(stockTransferResponse){
 
                 barcodes.add(0, barcode);
 
-                if(barcodes.size() > 0)
-                    backgroundImage.setVisibility(View.INVISIBLE);
-                else
-                    backgroundImage.setVisibility(View.VISIBLE);
+            }
+            else{
 
-                recyclerView.getAdapter().notifyDataSetChanged();
+                barcodes.add(0, "B_" + barcode);
+
+                Toast.makeText(CheckOut.this, "Operation failed to complete", Toast.LENGTH_SHORT).show();
 
             }
+
+            if(barcodes.size() > 0)
+                backgroundImage.setVisibility(View.INVISIBLE);
             else
-                Toast.makeText(CheckOut.this, "Operation failed to complete, try again", Toast.LENGTH_SHORT).show();
+                backgroundImage.setVisibility(View.VISIBLE);
+
+            recyclerView.getAdapter().notifyDataSetChanged();
+
 
             CheckOut.this.registerReceiver(mReceiver, mFilter);
 
