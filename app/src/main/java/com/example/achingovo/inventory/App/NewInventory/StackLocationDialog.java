@@ -34,16 +34,16 @@ public class StackLocationDialog extends DialogFragment {
 
         switch(SharedPreferencesClass.getWarehouseCode()){
             case "LOGBAY10":
-                aisleCode = "B-";
+                aisleCode = "Bay 10";
                 break;
             case "LOGNAW":
-                aisleCode = "A";
+                aisleCode = "New Ardbennie";
                 break;
             case "LOGVOS1":
-                aisleCode = "VE-";
+                aisleCode = "Vostermans East";
                 break;
             case "LOGVOS2":
-                aisleCode = "VW-";
+                aisleCode = "Vostermans West";
                 break;
         }
 

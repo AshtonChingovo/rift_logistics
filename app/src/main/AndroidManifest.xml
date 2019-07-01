@@ -17,6 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
+
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.example.achingovo.inventory.android.fileprovider"
@@ -39,15 +40,15 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".Utilities.Login.LoginActivity">
+        <activity android:name=".Utilities.Login.LoginActivity"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".App.MainActivity"></activity>
-
+        <activity android:name=".App.MainActivity"
+            android:launchMode="singleTop"/>
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />

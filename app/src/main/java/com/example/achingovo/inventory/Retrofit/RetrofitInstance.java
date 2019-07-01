@@ -4,11 +4,10 @@ import android.util.Log;
 
 import com.example.achingovo.inventory.Repository.B1_Objects.SalesOrder.DeliveryDocument;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockDisposals.DocumentLines;
-import com.example.achingovo.inventory.Repository.B1_Objects.StockDisposals.StockDisposalsEntity;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransfer;
 import com.example.achingovo.inventory.Repository.Entity.DispatchPictures;
-import com.example.achingovo.inventory.Repository.Entity.ManufactoringSerialNumber;
-import com.example.achingovo.inventory.Utilities.Login.Login;
+import com.example.achingovo.inventory.Repository.Entity.ManufacturingSerialNumber;
+import com.example.achingovo.inventory.Repository.Entity.Login;
 import com.google.gson.Gson;
 
 import org.json.JSONObject;
@@ -218,6 +217,7 @@ public class RetrofitInstance {
                 }
 
                 return null;
+
             }
             else
                 return null;
@@ -270,7 +270,7 @@ public class RetrofitInstance {
 
         String url = "$crossjoin(Orders,Orders/DocumentLines)?$expand=Orders($select=CardCode, CardName,DocEntry), " +
                 "Orders/DocumentLines($select=ItemCode,Quantity,RemainingOpenQuantity) &$filter=Orders/DocEntry eq Orders/DocumentLines/DocEntry and " +
-                "Orders/DocumentLines/WarehouseCode  eq '" + warehouseCode + "' &$orderby=Orders/DocumentStatus desc, Orders/DocEntry desc";
+                "Orders/DocumentStatus eq 'O' and Orders/DocumentLines/WarehouseCode  eq '" + warehouseCode + "' &$orderby=Orders/DocumentStatus desc, Orders/DocEntry desc";
 
         RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
         Call retrofitGET = retrofitAPI.getSalesOrdersList(cookie, url);
@@ -291,6 +291,7 @@ public class RetrofitInstance {
                 }
 
                 return null;
+
             }
             else
                 return null;
@@ -328,7 +329,7 @@ public class RetrofitInstance {
                 if(jsonObject == null || jsonObject.getJSONArray("value") == null || jsonObject.getJSONArray("value").length() == 0)
                     return false;
 
-                retrofitPatch = retrofitAPI.patchShippingCaseNumber(cookie, jsonObject.getJSONArray("value").getJSONObject(0).getInt("DocEntry"), new ManufactoringSerialNumber(shippingCaseNumber));
+                retrofitPatch = retrofitAPI.patchShippingCaseNumber(cookie, jsonObject.getJSONArray("value").getJSONObject(0).getInt("DocEntry"), new ManufacturingSerialNumber(shippingCaseNumber));
 
                 patchResponse = retrofitPatch.execute();
 

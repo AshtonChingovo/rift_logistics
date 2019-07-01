@@ -17,6 +17,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.achingovo.inventory.R;
+import com.example.achingovo.inventory.Repository.B1_Objects.StaticVariables;
 import com.example.achingovo.inventory.Repository.Entity.Warehouses;
 import com.example.achingovo.inventory.Retrofit.RetrofitInstance;
 import com.example.achingovo.inventory.Utilities.SharedPreferences.SharedPreferencesClass;
@@ -38,6 +39,8 @@ public class WarehouseLocationsList extends AppCompatActivity {
     List<Warehouses> warehouses = new ArrayList<>();
 
     Bundle args = new Bundle();
+
+    final String bay10WarehouseCode = StaticVariables.BAY10CODE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +97,7 @@ public class WarehouseLocationsList extends AppCompatActivity {
                     args.putString("toWarehouse", warehouses.get(getAdapterPosition()).getCode());
                     intent.putExtras(args);
                     startActivity(intent);
+
                 }
             });
 
@@ -127,10 +131,11 @@ public class WarehouseLocationsList extends AppCompatActivity {
 
                         JSONObject warehouseObject = jsonArray.getJSONObject(i);
 
-                        if(warehouseObject.getString("WarehouseCode").equals(warehouseCode))
+                        if(warehouseObject.getString("WarehouseCode").equals(warehouseCode) || warehouseObject.getString("WarehouseCode").equals(bay10WarehouseCode))
                             continue;
 
                         warehouses.add(new Warehouses(warehouseObject.getString("WarehouseName"), warehouseObject.getString("WarehouseCode")));
+
                     }
 
                 } catch (JSONException e) {
@@ -168,7 +173,6 @@ public class WarehouseLocationsList extends AppCompatActivity {
 
                     }
                 });
-
             }
         }
     }

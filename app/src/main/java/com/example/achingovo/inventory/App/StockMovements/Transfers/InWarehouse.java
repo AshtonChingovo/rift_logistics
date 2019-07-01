@@ -23,6 +23,7 @@ import android.widget.Toast;
 import com.example.achingovo.inventory.App.NewInventory.StackLocationDialog;
 import com.example.achingovo.inventory.R;
 import com.example.achingovo.inventory.Repository.B1_Objects.SerialNumbers;
+import com.example.achingovo.inventory.Repository.B1_Objects.StaticVariables;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransfer;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransferLines;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransferLinesBinAllocations;
@@ -131,8 +132,8 @@ public class InWarehouse extends AppCompatActivity implements StackLocationDialo
 
         }
 
-        SharedPreferencesClass.writeStackLocation((SharedPreferencesClass.getWarehouseCode() + "-" + StackLocationDialog.aisleCode + stackLocation).trim().toUpperCase());
-        this.stackLocation.setText(StackLocationDialog.aisleCode + stackLocation.trim().toUpperCase());
+        SharedPreferencesClass.writeStackLocation((SharedPreferencesClass.getWarehouseCode() + "-" + stackLocation).trim().toUpperCase());
+        this.stackLocation.setText(StackLocationDialog.aisleCode  + " -" +  stackLocation.trim().toUpperCase());
 
     }
 
@@ -306,7 +307,7 @@ public class InWarehouse extends AppCompatActivity implements StackLocationDialo
         serialNumbers.add(serialNumbersObj);
         stockTransferLinesBinAllocations.add(stockTransferLinesBinAllocationsObj);
 
-        StockTransferLines stockTransferLinesObj = new StockTransferLines(itemCode, itemCode, quantity, barcode, warehouseCode, fromWarehouse, serialNumbers,
+        StockTransferLines stockTransferLinesObj = new StockTransferLines(StaticVariables.ITEMCODE, StaticVariables.ITEMCODE, quantity, barcode, warehouseCode, fromWarehouse, serialNumbers,
                 stockTransferLinesBinAllocations);
 
         stockTransferLines.add(stockTransferLinesObj);

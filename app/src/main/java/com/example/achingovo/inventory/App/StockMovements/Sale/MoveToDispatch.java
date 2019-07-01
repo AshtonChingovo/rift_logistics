@@ -237,7 +237,7 @@ public class MoveToDispatch extends AppCompatActivity{
         }
     }
 
-    public StockTransfer generateStockTransfersJson(int systemNumber, int binAbsEntry){
+    public StockTransfer generateStockTransfersJson(int systemNumber, int binAbsEntry) {
 
         // All stock movements first go to the TRANSIT warehouse
         String warehouseCode = SharedPreferencesClass.getWarehouseCode();

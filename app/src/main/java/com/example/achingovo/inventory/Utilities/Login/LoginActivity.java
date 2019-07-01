@@ -12,12 +12,13 @@ import android.widget.Toast;
 
 import com.example.achingovo.inventory.App.MainActivity;
 import com.example.achingovo.inventory.R;
+import com.example.achingovo.inventory.Repository.Entity.Login;
 import com.example.achingovo.inventory.Retrofit.RetrofitInstance;
 import com.example.achingovo.inventory.Utilities.SharedPreferences.SharedPreferencesClass;
 
 public class LoginActivity extends AppCompatActivity {
 
-    final String COMPANY_DB = "NT_TEST1";
+    final String COMPANY_DB = "NT_TEST2";
 
     Button login;
     EditText username;
@@ -87,6 +88,7 @@ public class LoginActivity extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             if(isLoggedIn){
+                finishAffinity();
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 startActivity(intent);
             }

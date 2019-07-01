@@ -2,13 +2,10 @@ package com.example.achingovo.inventory.Retrofit;
 
 import com.example.achingovo.inventory.Repository.B1_Objects.SalesOrder.DeliveryDocument;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockDisposals.DocumentLines;
-import com.example.achingovo.inventory.Repository.B1_Objects.StockDisposals.StockDisposalsEntity;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransfer;
-import com.example.achingovo.inventory.Repository.Entity.ManufactoringSerialNumber;
-import com.example.achingovo.inventory.Utilities.Login.Login;
+import com.example.achingovo.inventory.Repository.Entity.ManufacturingSerialNumber;
+import com.example.achingovo.inventory.Repository.Entity.Login;
 import com.google.gson.JsonObject;
-
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -47,7 +44,7 @@ public interface RetrofitAPI {
     Call<JsonObject> getSalesOrderQuantity(@Header("Cookie") String cookie, @Url String salesOrderQuantityUrl);
 
     @PATCH("SerialNumberDetails({shippingCaseNumber})")
-    Call<JsonObject> patchShippingCaseNumber(@Header("Cookie") String cookie, @Path("shippingCaseNumber") int shippingCaseNumber, @Body ManufactoringSerialNumber manufactoringSerialNumber);
+    Call<JsonObject> patchShippingCaseNumber(@Header("Cookie") String cookie, @Path("shippingCaseNumber") int shippingCaseNumber, @Body ManufacturingSerialNumber manufacturingSerialNumber);
 
     @POST("StockTransfers")
     Call<JsonObject> stockTransfer(@Header("Cookie") String cookie, @Body StockTransfer stockTransfer);

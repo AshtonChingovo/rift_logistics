@@ -20,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.achingovo.inventory.Repository.B1_Objects.SerialNumbers;
+import com.example.achingovo.inventory.Repository.B1_Objects.StaticVariables;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransfer;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransferLines;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransferLinesBinAllocations;
@@ -183,7 +184,7 @@ public class CheckIn extends AppCompatActivity {
                     if(jsonArray.length() != 0){
 
                         // Get scanned carton's data with BinLocationAbsEntry
-                        downloadedBinLocationAbsEntry = RetrofitInstance.getBinLocationAbsEntryNumber(SharedPreferencesClass.getCookie(), SharedPreferencesClass.getStackLocation());
+                        /*downloadedBinLocationAbsEntry = RetrofitInstance.getBinLocationAbsEntryNumber(SharedPreferencesClass.getCookie(), SharedPreferencesClass.getStackLocation());
 
                         if(downloadedBinLocationAbsEntry == null)
                             return null;
@@ -197,9 +198,9 @@ public class CheckIn extends AppCompatActivity {
                         // Extract scanned carton's BinLocationAbsEntry
                         downloadedBinLocationAbsEntry = jsonArray.getJSONObject(0).get("AbsEntry").toString();
 
-                        Log.i("BinLocation", "Abs:" + downloadedBinLocationAbsEntry);
+                        Log.i("BinLocation", "Abs:" + downloadedBinLocationAbsEntry);*/
 
-                        stockTransferObj = generateStockTransfersJson(new Integer(downloadedSystemNumber), new Integer(downloadedBinLocationAbsEntry));
+                        stockTransferObj = generateStockTransfersJson(new Integer(downloadedSystemNumber));
                         stockTransferResponse = RetrofitInstance.stockTransfer(SharedPreferencesClass.getCookie(), stockTransferObj);
 
                     }
@@ -245,7 +246,7 @@ public class CheckIn extends AppCompatActivity {
         }
     }
 
-    public StockTransfer generateStockTransfersJson(int systemNumber, int binAbsEntry){
+    public StockTransfer generateStockTransfersJson(int systemNumber){
 
         // All stock movements first go to the TRANSIT warehouse
         String warehouseCode = SharedPreferencesClass.getWarehouseCode();
@@ -259,17 +260,17 @@ public class CheckIn extends AppCompatActivity {
 
         //Serial Numbers
         SerialNumbers serialNumbersObj = new SerialNumbers(barcode, systemNumber, quantity);
-        StockTransferLinesBinAllocations stockTransferLinesBinAllocationsObj = new StockTransferLinesBinAllocations(binAbsEntry, quantity,
-                allowNegativeQuantity, serialAndBatchNumbersBaseLine, binActionType, baseLineNumber);
+        /*StockTransferLinesBinAllocations stockTransferLinesBinAllocationsObj = new StockTransferLinesBinAllocations(binAbsEntry, quantity,
+                allowNegativeQuantity, serialAndBatchNumbersBaseLine, binActionType, baseLineNumber);*/
 
         List<SerialNumbers> serialNumbers = new ArrayList<>();
         List<StockTransferLinesBinAllocations> stockTransferLinesBinAllocations = new ArrayList<>();
         List<StockTransferLines> stockTransferLines = new ArrayList<>();
 
         serialNumbers.add(serialNumbersObj);
-        stockTransferLinesBinAllocations.add(stockTransferLinesBinAllocationsObj);
+        //stockTransferLinesBinAllocations.add(stockTransferLinesBinAllocationsObj);
 
-        StockTransferLines stockTransferLinesObj = new StockTransferLines(itemCode, itemCode, quantity, barcode, warehouseCode, fromWarehouse, serialNumbers,
+        StockTransferLines stockTransferLinesObj = new StockTransferLines(StaticVariables.ITEMCODE, StaticVariables.ITEMCODE, quantity, barcode, warehouseCode, fromWarehouse, serialNumbers,
                 null);
 
         stockTransferLines.add(stockTransferLinesObj);

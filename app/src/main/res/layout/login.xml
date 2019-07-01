@@ -90,7 +90,7 @@
                 android:layout_marginRight="32dp"
                 android:layout_marginBottom="32dp"
                 android:backgroundTint="@color/appBackground"
-                android:text="Button"
+                android:text="Login"
                 android:textColor="@color/white"
                 android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="parent"

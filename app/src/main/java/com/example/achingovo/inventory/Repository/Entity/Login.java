@@ -1,4 +1,4 @@
-package com.example.achingovo.inventory.Utilities.Login;
+package com.example.achingovo.inventory.Repository.Entity;
 
 public class Login {
 

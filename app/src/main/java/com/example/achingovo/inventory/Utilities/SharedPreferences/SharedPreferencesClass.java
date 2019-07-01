@@ -35,6 +35,8 @@ public class SharedPreferencesClass {
 
     public static boolean writeCookie(String responseVal){
 
+        Log.i("writeCookiewriteCookie", responseVal);
+
         if(responseVal != null){
             editor.putString(context.getString(R.string.cookieSharedPreferences), responseVal);
             editor.apply();

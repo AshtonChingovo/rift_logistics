@@ -1,10 +1,10 @@
 package com.example.achingovo.inventory.Repository.Entity;
 
-public class ManufactoringSerialNumber {
+public class ManufacturingSerialNumber {
 
     int MfrSerialNo;
 
-    public ManufactoringSerialNumber(int mfrSerialNo) {
+    public ManufacturingSerialNumber(int mfrSerialNo) {
         MfrSerialNo = mfrSerialNo;
     }
 
@@ -15,4 +15,5 @@ public class ManufactoringSerialNumber {
     public void setMfrSerialNo(int mfrSerialNo) {
         MfrSerialNo = mfrSerialNo;
     }
+
 }

@@ -29,9 +29,9 @@ public class MainActivity extends AppCompatActivity {
 
         newInventory = findViewById(R.id.newInventory);
         movement = findViewById(R.id.inWarehouseMovement);
-        warningImage = findViewById(R.id.warning);
+        //warningImage = findViewById(R.id.warning);
 
-        warningImage.setVisibility(View.INVISIBLE);
+/*        warningImage.setVisibility(View.INVISIBLE);
 
         warningImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, PicturesNotUploadedList.class);
                 startActivity(intent);
             }
-        });
+        });*/
 
         // Check for images
         new GetPicturesNotUploaded().execute();
@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
     public class GetPicturesNotUploaded extends AsyncTask<Void, Void, Void> {
 
         boolean picturesAvailable;
@@ -80,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            warningImage.setVisibility(picturesAvailable == true ? View.VISIBLE : View.INVISIBLE);
+            //warningImage.setVisibility(picturesAvailable == true ? View.VISIBLE : View.INVISIBLE);
 
         }
 

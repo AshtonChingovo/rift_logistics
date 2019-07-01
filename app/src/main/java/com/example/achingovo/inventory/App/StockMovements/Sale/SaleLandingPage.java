@@ -93,7 +93,7 @@ public class SaleLandingPage extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
-        getMenuInflater().inflate(R.menu.take_pictures, menu);
+        //getMenuInflater().inflate(R.menu.take_pictures, menu);
 
         return true;
     }

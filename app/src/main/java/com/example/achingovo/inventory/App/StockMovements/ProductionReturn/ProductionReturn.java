@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.example.achingovo.inventory.R;
 import com.example.achingovo.inventory.Repository.B1_Objects.SerialNumbers;
+import com.example.achingovo.inventory.Repository.B1_Objects.StaticVariables;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransfer;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransferLines;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransferLinesBinAllocations;
@@ -231,7 +232,7 @@ public class ProductionReturn extends AppCompatActivity {
         // Bin location
         List<StockTransferLinesBinAllocations> stockTransferLinesBinAllocations = new ArrayList<>();
 
-        StockTransferLines stockTransferLinesObj = new StockTransferLines(itemCode, itemCode, quantity, barcode, toWarehouseCode, fromWarehouse, serialNumbers, stockTransferLinesBinAllocations);
+        StockTransferLines stockTransferLinesObj = new StockTransferLines(StaticVariables.ITEMCODE, StaticVariables.ITEMCODE, quantity, barcode, StaticVariables.FROMWAREHOUSE, fromWarehouse, serialNumbers, stockTransferLinesBinAllocations);
         List<StockTransferLines> stockTransferLines = new ArrayList<>();
         stockTransferLines.add(stockTransferLinesObj);
 

@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.example.achingovo.inventory.R;
 import com.example.achingovo.inventory.Repository.B1_Objects.SerialNumbers;
+import com.example.achingovo.inventory.Repository.B1_Objects.StaticVariables;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransfer;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransferLines;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransferLinesBinAllocations;
@@ -265,7 +266,7 @@ public class MoveToDispatch extends AppCompatActivity{
         serialNumbers.add(serialNumbersObj);
         stockTransferLinesBinAllocations.add(stockTransferLinesBinAllocationsObj);
 
-        StockTransferLines stockTransferLinesObj = new StockTransferLines(itemCode, itemCode, quantity, barcode, warehouseCode, fromWarehouse, serialNumbers,
+        StockTransferLines stockTransferLinesObj = new StockTransferLines(StaticVariables.ITEMCODE, StaticVariables.ITEMCODE, quantity, barcode, warehouseCode, fromWarehouse, serialNumbers,
                 stockTransferLinesBinAllocations);
 
         stockTransferLines.add(stockTransferLinesObj);

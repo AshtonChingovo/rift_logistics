@@ -21,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.achingovo.inventory.Repository.B1_Objects.SerialNumbers;
+import com.example.achingovo.inventory.Repository.B1_Objects.StaticVariables;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransfer;
 import com.example.achingovo.inventory.Repository.B1_Objects.StockTransfer.NewInventory.StockTransferLines;
 import com.example.achingovo.inventory.R;
@@ -224,8 +225,6 @@ public class Scanning extends AppCompatActivity implements ScannedBaleDialog.Sca
 
                     if(jsonArray.length() != 0){
 
-                        Log.i("BinLocation", "Abs:" + downloadedBinLocationAbsEntry);
-
                         stockTransferObj = generateStockTransfersJson(new Integer(downloadedSystemNumber));
                         stockTransferResponse = RetrofitInstance.stockTransfer(SharedPreferencesClass.getCookie(), stockTransferObj);
 
@@ -272,7 +271,6 @@ public class Scanning extends AppCompatActivity implements ScannedBaleDialog.Sca
             binLocationAbsEntry = downloadedBinLocationAbsEntry;
 
         }
-
     }
 
     public StockTransfer generateStockTransfersJson(int systemNumber){
@@ -285,22 +283,12 @@ public class Scanning extends AppCompatActivity implements ScannedBaleDialog.Sca
         int serialAndBatchNumbersBaseLine = 0;
         int baseLineNumber = 0;
 
-        // Serial number object
-        SerialNumbers serialNumbersObj = new SerialNumbers(barcode, systemNumber, quantity);
-
-        // Stock transfer lines bin allocations
-     /*   StockTransferLinesBinAllocations stockTransferLinesBinAllocationsObj = new StockTransferLinesBinAllocations(binAbsEntry, quantity,
-                allowNegativeQuantity, serialAndBatchNumbersBaseLine, binActionType, baseLineNumber);
-*/
         List<SerialNumbers> serialNumbers = new ArrayList<>();
-        //List<StockTransferLinesBinAllocations> stockTransferLinesBinAllocations = new ArrayList<>();
-        List<StockTransferLines> stockTransferLines = new ArrayList<>();
-
+        SerialNumbers serialNumbersObj = new SerialNumbers(barcode, systemNumber, quantity);
         serialNumbers.add(serialNumbersObj);
-        //stockTransferLinesBinAllocations.add(stockTransferLinesBinAllocationsObj);
 
-        StockTransferLines stockTransferLinesObj = new StockTransferLines(itemCode, itemCode, quantity, barcode, warehouseCode, fromWarehouse, serialNumbers, null);
-
+        List<StockTransferLines> stockTransferLines = new ArrayList<>();
+        StockTransferLines stockTransferLinesObj = new StockTransferLines(StaticVariables.ITEMCODE, StaticVariables.ITEMCODE, quantity, barcode, warehouseCode, StaticVariables.FROMWAREHOUSE, serialNumbers, null);
         stockTransferLines.add(stockTransferLinesObj);
 
         StockTransfer stockTransfer = new StockTransfer(fromWarehouse, warehouseCode, stockTransferLines);
@@ -312,6 +300,7 @@ public class Scanning extends AppCompatActivity implements ScannedBaleDialog.Sca
     @Override
     protected void onResume() {
         super.onResume();
+        this.registerReceiver(mReceiver, mFilter);
     }
 
     @Override
@@ -319,4 +308,5 @@ public class Scanning extends AppCompatActivity implements ScannedBaleDialog.Sca
         super.onPause();
         this.unregisterReceiver(mReceiver);
     }
+
 }
