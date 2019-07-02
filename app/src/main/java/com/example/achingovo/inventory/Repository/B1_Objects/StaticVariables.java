@@ -11,5 +11,4 @@ public class StaticVariables {
 
     public static final String BAY10CODE = "LOGBAY10";
 
-
 }
