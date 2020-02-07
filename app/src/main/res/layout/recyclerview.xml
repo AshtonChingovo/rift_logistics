@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/appBackground"
-    tools:context=".App.NewInventory.WarehouseLocations">
+    tools:context=".ui.NewInventory.WarehouseName_CodeList">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"

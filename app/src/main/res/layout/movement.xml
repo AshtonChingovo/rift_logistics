@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/appBackground"
-    tools:context=".App.StockMovements.Movement_Dashboard">
+    tools:context=".ui.StockMovements.Movement_Dashboard">
 
 
     <android.support.v7.widget.Toolbar
