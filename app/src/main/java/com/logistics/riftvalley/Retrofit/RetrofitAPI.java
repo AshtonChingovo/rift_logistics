@@ -43,6 +43,9 @@ public interface RetrofitAPI {
     @GET()
     Call<JsonObject> getSalesOrderQuantity(@Header("Cookie") String cookie, @Url String salesOrderQuantityUrl);
 
+    @GET()
+    Call<JsonObject> getLotNumbers(@Header("Cookie") String cookie, @Url String lotNumbersUrl);
+
     @PATCH("SerialNumberDetails({shippingCaseNumber})")
     Call<JsonObject> patchShippingCaseNumber(@Header("Cookie") String cookie, @Path("shippingCaseNumber") int shippingCaseNumber, @Body ManufacturingSerialNumber manufacturingSerialNumber);
 
@@ -57,5 +60,7 @@ public interface RetrofitAPI {
 
     @POST("InventoryGenExits")
     Call<JsonObject> stockDisposal(@Header("Cookie") String cookie, @Body DocumentLines documentLines);
+
+
 
 }

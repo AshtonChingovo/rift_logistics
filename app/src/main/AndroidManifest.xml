@@ -17,6 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
+        <activity android:name=".ui.StockMovements.Transfers.GradeReclassification"></activity>
 
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -26,42 +27,44 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
-        </provider>
-
-        <!-- Internet Broadcast Receiver -->
-        <receiver android:name="com.logistics.riftvalley.Utilities.InternetBroadcastReceiver.InternetBroadcastReceiver">
+        </provider> <!-- Internet Broadcast Receiver -->
+        <receiver android:name=".Utilities.InternetBroadcastReceiver.InternetBroadcastReceiver">
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
-        <receiver android:name="com.logistics.riftvalley.Utilities.NewlandScanningReceiver.ScanReceiver">
+        <receiver android:name=".Utilities.NewlandScanningReceiver.ScanReceiver">
             <intent-filter>
                 <action android:name="nlscan.action.SCANNER_RESULT" />
             </intent-filter>
         </receiver>
 
-        <activity android:name=".ui.Login.LoginActivity"
+        <activity
+            android:name=".ui.Login.LoginActivity"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.logistics.riftvalley.App.HomeDashboardActivity"
-            android:launchMode="singleTop"/>
+        <activity
+            android:name=".App.HomeDashboardActivity"
+            android:launchMode="singleTop" />
+
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
 
         <activity
             android:name=".ui.StockMovements.WarehouseLocations_Movements"
-            android:parentActivityName="com.logistics.riftvalley.App.HomeDashboardActivity" />
+            android:parentActivityName=".App.HomeDashboardActivity" />
         <activity
             android:name=".ui.StockMovements.Movement_Dashboard"
             android:parentActivityName=".ui.StockMovements.WarehouseLocations_Movements" />
         <activity
             android:name=".ui.NewInventory.WarehouseName_CodeList"
-            android:parentActivityName="com.logistics.riftvalley.App.HomeDashboardActivity" />
+            android:parentActivityName=".App.HomeDashboardActivity" />
         <activity
             android:name=".ui.NewInventory.ScanNewInventory"
             android:parentActivityName=".ui.NewInventory.WarehouseName_CodeList" />
@@ -97,9 +100,10 @@
         <activity android:name=".ui.StockMovements.Sale.Pictures.Caption" />
         <activity android:name=".ui.StockMovements.Sale.Pictures.ViewPicture" />
         <activity android:name=".ui.StockMovements.Sale.Pictures.PicturesList" />
-        <activity android:name="com.logistics.riftvalley.App.PicturesNotUploadedList" />
-        <activity android:name="com.logistics.riftvalley.Utilities.NoConnection"
-            android:launchMode="singleTop"/>
+        <activity android:name=".App.PicturesNotUploadedList" />
+        <activity
+            android:name=".Utilities.NoConnection"
+            android:launchMode="singleTop" />
     </application>
 
 </manifest>

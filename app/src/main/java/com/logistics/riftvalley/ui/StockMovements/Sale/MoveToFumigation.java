@@ -26,6 +26,8 @@ import com.logistics.riftvalley.data.model.NewInventory.StockTransferLines;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransferLinesBinAllocations;
 import com.logistics.riftvalley.Retrofit.RetrofitInstance;
 import com.logistics.riftvalley.Utilities.SharedPreferences.SharedPreferencesClass;
+import com.logistics.riftvalley.data.model.SalesOrder.SalesOrderDocumentLinesSerialNumbers;
+import com.logistics.riftvalley.data.model.SalesOrder.SalesOrderList;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,19 +36,24 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MoveToFumigation extends AppCompatActivity{
+import static com.logistics.riftvalley.Utilities.PublicStaticVariables.*;
+
+public class MoveToFumigation extends AppCompatActivity implements _SalesView{
 
     Toolbar toolbar;
     RecyclerView recyclerView;
     ImageView backgroundImage;
     ProgressBar progressBar;
-
+    String stackLocation;
     String barcode;
 
     IntentFilter mFilter;
     BroadcastReceiver mReceiver;
 
     List<String> barcodes = new ArrayList<>();
+
+    // Reference to Presenter
+    _SalesPresenter salesPresenter = new SalesPresenter();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,15 +73,21 @@ public class MoveToFumigation extends AppCompatActivity{
 
         toolbar.setTitle("Move To Fumigation");
 
+        stackLocation = SharedPreferencesClass.getWarehouseCode() + "-" + FUMIGATION_AREA;
+        SharedPreferencesClass.writeStackLocation(stackLocation);
+
         recyclerView.setAdapter(new RecyclerViewAdapter());
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        // initialize view in Presenter
+        salesPresenter.initializeView(this);
 
         // PDA scanning broadcast receiver
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
 
-                if(intent.getStringExtra("SCAN_BARCODE1") == null)
+                if(intent.getStringExtra(SCAN_BARCODE1) == null)
                     return;
 
                 backgroundImage.setVisibility(View.INVISIBLE);
@@ -82,7 +95,7 @@ public class MoveToFumigation extends AppCompatActivity{
 
                 unregisterReceiver(mReceiver);
 
-                barcode = intent.getStringExtra("SCAN_BARCODE1");
+                barcode = intent.getStringExtra(SCAN_BARCODE1);
 
                 /*Bundle args = new Bundle();
                 args.putString("barcode", intent.getStringExtra("SCAN_BARCODE1"));
@@ -92,13 +105,62 @@ public class MoveToFumigation extends AppCompatActivity{
                 dialog.show(getSupportFragmentManager(), "Dialog");
                 */
 
-                new TransferStock().execute(barcode);
+                // new TransferStock().execute(barcode);
+
+                salesPresenter.moveToFumigation(barcode, null, MOVE_TO_FUMIGATION_SALES);
 
             }
         };
 
         mFilter = new IntentFilter("nlscan.action.SCANNER_RESULT");
         this.registerReceiver(mReceiver, mFilter);
+
+    }
+
+    @Override
+    public void success(boolean isSuccessful) {
+
+        progressBar.setVisibility(View.INVISIBLE);
+
+        if(isSuccessful)
+            barcodes.add(0, barcode);
+        else{
+
+            barcodes.add(0, "B_" + barcode);
+
+            Toast.makeText(MoveToFumigation.this, "Operation failed to complete, try again", Toast.LENGTH_SHORT).show();
+
+        }
+
+        if(barcodes.size() > 0)
+            backgroundImage.setVisibility(View.INVISIBLE);
+        else
+            backgroundImage.setVisibility(View.VISIBLE);
+
+        recyclerView.getAdapter().notifyDataSetChanged();
+
+        MoveToFumigation.this.registerReceiver(mReceiver, mFilter);
+
+    }
+
+    // not in use
+    @Override
+    public void salesOrdersList(List<SalesOrderList> salesOrderLists) {
+
+    }
+
+    @Override
+    public void dispatchProcessResponse(boolean isSuccessful, String message, String operationSource) {
+
+    }
+
+    @Override
+    public void dispatchGoodsResponse(boolean isSuccessful, String message) {
+
+    }
+
+    @Override
+    public void isShippingCaseNumberAdded(boolean isSuccessful, String message, SalesOrderDocumentLinesSerialNumbers salesOrderDocumentLinesSerialNumbers) {
 
     }
 
@@ -170,8 +232,6 @@ public class MoveToFumigation extends AppCompatActivity{
 
             // Get scanned carton's system number
             downloadedSystemNumber = RetrofitInstance.getCartonSystemNumber(SharedPreferencesClass.getCookie(), values[0]);
-
-            stackLocation = SharedPreferencesClass.getWarehouseCode() + "-FUMIGATION";
 
             // Add shipping case number to serial number
             // values[0] = serialNumber **** values[1] = shippingCaseNumber

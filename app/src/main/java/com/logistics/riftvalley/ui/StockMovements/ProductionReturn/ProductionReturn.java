@@ -37,7 +37,7 @@ import java.util.List;
 
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.*;
 
-public class ProductionReturn extends AppCompatActivity {
+public class ProductionReturn extends AppCompatActivity implements _ProductionReturnView{
 
     Toolbar toolbar;
     RecyclerView recyclerView;
@@ -50,6 +50,9 @@ public class ProductionReturn extends AppCompatActivity {
     BroadcastReceiver mReceiver;
 
     List<String> barcodes = new ArrayList<>();
+
+    // Reference to Presenter
+    _ProductionReturnPresenter productionReturnPresenter = new ProductionReturnPresenter();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,29 +73,59 @@ public class ProductionReturn extends AppCompatActivity {
         actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setHomeAsUpIndicator(R.drawable.back); */
 
+
+        // initialize view in Presenter
+        productionReturnPresenter.initializeView(this);
+
         // PDA scanning broadcast receiver
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
 
-                if(intent.getStringExtra("SCAN_BARCODE1") == null)
+                if(intent.getStringExtra(SCAN_BARCODE1) == null)
                     return;
 
                 backgroundImage.setVisibility(View.INVISIBLE);
                 progressBar.setVisibility(View.VISIBLE);
 
-                barcode = intent.getStringExtra("SCAN_BARCODE1");
+                barcode = intent.getStringExtra(SCAN_BARCODE1);
 
                 unregisterReceiver(mReceiver);
 
-                new TransferStock().execute(intent.getStringExtra("SCAN_BARCODE1"));
-
+                // new TransferStock().execute(intent.getStringExtra("SCAN_BARCODE1"));
+                productionReturnPresenter.requestStockTransfer(barcode, null, PRODUCTION_RETURN);
 
             }
         };
 
         mFilter= new IntentFilter("nlscan.action.SCANNER_RESULT");
         this.registerReceiver(mReceiver, mFilter);
+
+    }
+
+    @Override
+    public void success(boolean isSuccessful) {
+
+        progressBar.setVisibility(View.INVISIBLE);
+
+        if(isSuccessful){
+            barcodes.add(0, barcode);
+        }
+        else{
+            barcodes.add(0, "B_" + barcode);
+
+            Toast.makeText(ProductionReturn.this, "Operation failed to complete, try again", Toast.LENGTH_SHORT).show();
+        }
+
+        if(barcodes.size() > 0)
+            backgroundImage.setVisibility(View.INVISIBLE);
+        else
+            backgroundImage.setVisibility(View.VISIBLE);
+
+        recyclerView.getAdapter().notifyDataSetChanged();
+
+
+        ProductionReturn.this.registerReceiver(mReceiver, mFilter);
 
     }
 
@@ -223,7 +256,6 @@ public class ProductionReturn extends AppCompatActivity {
         String toWarehouseCode = "TPZ";
         String fromWarehouse = SharedPreferencesClass.getWarehouseCode();
 
-        String itemCode = "BO3";
         int quantity = 1;
 
         //Serial Numbers

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/appBackground">
@@ -19,117 +19,191 @@
         app:title="Transfers"
         app:titleTextColor="@color/fontColor" />
 
-    <android.support.v7.widget.CardView
-        android:id="@+id/interWareHouseMovementCard"
-        android:layout_width="304dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="52dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
-        android:backgroundTint="@color/cardBackground"
-        android:elevation="4dp"
-        app:cardCornerRadius="4dp"
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/inWarehouseMovement">
+        app:layout_constraintTop_toBottomOf="@+id/toolbar">
 
-        <android.support.constraint.ConstraintLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/moveToFumigationTextView"
-                android:layout_width="200dp"
+            <android.support.v7.widget.CardView
+                android:id="@+id/interWareHouseMovementCard"
+                android:layout_width="304dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginLeft="16dp"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="24dp"
-                android:elevation="4dp"
-                android:text="INTER-WAREHOUSE"
-                android:textColor="@color/fontColor"
-                android:textSize="28sp"
-                app:fontFamily="@font/basic"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_chainStyle="packed" />
-
-            <ImageView
-                android:id="@+id/moveToFumigationImageView"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
+                android:layout_marginTop="52dp"
                 android:layout_marginEnd="16dp"
                 android:layout_marginRight="16dp"
-                app:layout_constraintBottom_toBottomOf="@+id/moveToFumigationTextView"
+                android:backgroundTint="@color/cardBackground"
+                android:elevation="4dp"
+                app:cardCornerRadius="4dp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/moveToFumigationTextView"
-                app:layout_constraintTop_toTopOf="@+id/moveToFumigationTextView"
-                app:srcCompat="@drawable/right_arrow" />
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/inWarehouseMovement">
 
-        </android.support.constraint.ConstraintLayout>
+                <android.support.constraint.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
 
-    </android.support.v7.widget.CardView>
+                    <TextView
+                        android:id="@+id/moveToFumigationTextView"
+                        android:layout_width="200dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginTop="24dp"
+                        android:layout_marginBottom="24dp"
+                        android:elevation="4dp"
+                        android:text="INTER-WAREHOUSE"
+                        android:textColor="@color/fontColor"
+                        android:textSize="24sp"
+                        app:fontFamily="@font/basic"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_chainStyle="packed" />
 
-    <android.support.v7.widget.CardView
-        android:id="@+id/inWarehouseMovement"
-        android:layout_width="304dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="52dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
-        android:backgroundTint="@color/cardBackground"
-        android:elevation="4dp"
-        app:cardCornerRadius="4dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        app:layout_constraintVertical_chainStyle="packed">
+                    <ImageView
+                        android:id="@+id/moveToFumigationImageView"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginLeft="8dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginRight="16dp"
+                        app:layout_constraintBottom_toBottomOf="@+id/moveToFumigationTextView"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/moveToFumigationTextView"
+                        app:layout_constraintTop_toTopOf="@+id/moveToFumigationTextView"
+                        app:srcCompat="@drawable/right_arrow" />
 
-        <android.support.constraint.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+                </android.support.constraint.ConstraintLayout>
 
-            <TextView
-                android:id="@+id/dispatchTextView"
-                android:layout_width="210dp"
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/inWarehouseMovement"
+                android:layout_width="304dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
-                android:layout_marginBottom="24dp"
-                android:elevation="4dp"
-                android:text="IN-WAREHOUSE"
-                android:textColor="@color/fontColor"
-                android:textSize="28sp"
-                app:fontFamily="@font/basic"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/dispatchImageView"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_chainStyle="packed" />
-
-            <ImageView
-                android:id="@+id/dispatchImageView"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginTop="42dp"
                 android:layout_marginEnd="16dp"
                 android:layout_marginRight="16dp"
-                app:layout_constraintBottom_toBottomOf="@+id/dispatchTextView"
+                android:backgroundTint="@color/cardBackground"
+                android:elevation="4dp"
+                app:cardCornerRadius="4dp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/dispatchTextView"
-                app:srcCompat="@drawable/right_arrow" />
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/toolbar"
+                app:layout_constraintVertical_chainStyle="packed">
 
-        </android.support.constraint.ConstraintLayout>
+                <android.support.constraint.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
 
-    </android.support.v7.widget.CardView>
+                    <TextView
+                        android:id="@+id/dispatchTextView"
+                        android:layout_width="210dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_marginRight="8dp"
+                        android:layout_marginBottom="24dp"
+                        android:elevation="4dp"
+                        android:text="IN-WAREHOUSE"
+                        android:textColor="@color/fontColor"
+                        android:textSize="24sp"
+                        app:fontFamily="@font/basic"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/dispatchImageView"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_chainStyle="packed" />
+
+                    <ImageView
+                        android:id="@+id/dispatchImageView"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginRight="16dp"
+                        app:layout_constraintBottom_toBottomOf="@+id/dispatchTextView"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="@+id/dispatchTextView"
+                        app:srcCompat="@drawable/right_arrow" />
+
+                </android.support.constraint.ConstraintLayout>
+
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/gradeTransferCard"
+                android:layout_width="304dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginTop="42dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginBottom="16dp"
+                android:backgroundTint="@color/cardBackground"
+                android:elevation="4dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/interWareHouseMovementCard">
+
+                <android.support.constraint.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/gradeTransferTextView"
+                        android:layout_width="210dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginTop="24dp"
+                        android:layout_marginBottom="24dp"
+                        android:elevation="4dp"
+                        android:text="GRADE RECLASSIFICATION"
+                        android:textColor="@color/fontColor"
+                        android:textSize="24sp"
+                        app:fontFamily="@font/basic"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_chainStyle="packed" />
+
+                    <ImageView
+                        android:id="@+id/gradeTransferImageView"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginLeft="8dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginRight="16dp"
+                        app:layout_constraintBottom_toBottomOf="@+id/gradeTransferTextView"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/gradeTransferTextView"
+                        app:layout_constraintTop_toTopOf="@+id/gradeTransferTextView"
+                        app:srcCompat="@drawable/right_arrow" />
+
+                </android.support.constraint.ConstraintLayout>
+
+            </android.support.v7.widget.CardView>
+
+        </LinearLayout>
+
+    </ScrollView>
 
 </android.support.constraint.ConstraintLayout>

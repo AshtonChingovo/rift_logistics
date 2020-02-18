@@ -53,8 +53,8 @@ public class ShippingCaseNumberDialog extends DialogFragment {
     }
 
     public interface ScanDialog{
-        public void ScanDialogOkClicked(String serialNumber, String shippingCaseNumber);
-        public void ScanDialogCancelClicked();
+        void ScanDialogOkClicked(String serialNumber, String shippingCaseNumber);
+        void ScanDialogCancelClicked();
     }
 
     @Override

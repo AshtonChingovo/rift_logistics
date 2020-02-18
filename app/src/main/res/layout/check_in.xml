@@ -50,10 +50,12 @@
     <TextView
         android:id="@+id/location"
         android:layout_width="0dp"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:background="#FFFFFF"
         android:elevation="4dp"
         android:gravity="center"
+        android:padding="16dp"
+        android:paddingTop="16dp"
         android:text="STACK LOCATION"
         android:textColor="?attr/colorPrimary"
         android:textSize="26sp"

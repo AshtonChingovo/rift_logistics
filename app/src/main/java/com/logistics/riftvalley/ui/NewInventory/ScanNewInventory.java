@@ -28,6 +28,7 @@ import com.logistics.riftvalley.data.model.NewInventory.StockTransferLines;
 import com.logistics.riftvalley.R;
 import com.logistics.riftvalley.Retrofit.RetrofitInstance;
 import com.logistics.riftvalley.Utilities.SharedPreferences.SharedPreferencesClass;
+import com.logistics.riftvalley.ui.StackLocationDialog;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -79,6 +80,12 @@ public class ScanNewInventory extends AppCompatActivity implements _NewInventory
         // initialize view in Presenter
         newInventoryPresenter.initializeNewInventoryView(this);
 
+        // write warehouse location to Shared preference
+        SharedPreferencesClass.writeWarehouseCode(warehouseCode);
+
+        // set the stack location to the warehouse Receiving area
+        SharedPreferencesClass.writeStackLocation((SharedPreferencesClass.getWarehouseCode() + "-" + RECEIVING_AREA).trim().toUpperCase());
+
         if(warehouseName != null)
             toolbar.setTitle(warehouseName + " - Cartons");
 
@@ -90,6 +97,7 @@ public class ScanNewInventory extends AppCompatActivity implements _NewInventory
             @Override
             public void onReceive(Context context, Intent intent) {
                 try{
+
                     if(intent.getStringExtra(SCAN_BARCODE1) == null)
                         return;
 
@@ -240,7 +248,6 @@ public class ScanNewInventory extends AppCompatActivity implements _NewInventory
         this.unregisterReceiver(mReceiver);
 
         newInventoryPresenter.requestSystemNumber(barcode, warehouseCode, SCAN_NEW_INVENTORY);
-
 
         // new AddStockToWarehouse().execute(serialNumber, stackLocation, warehouseCode);
 

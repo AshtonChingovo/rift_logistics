@@ -33,7 +33,9 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StockDisposals extends AppCompatActivity {
+import static com.logistics.riftvalley.Utilities.PublicStaticVariables.*;
+
+public class StockDisposals extends AppCompatActivity implements _StockDisposalsView{
 
     Toolbar toolbar;
     RecyclerView recyclerView;
@@ -41,10 +43,13 @@ public class StockDisposals extends AppCompatActivity {
     IntentFilter mFilter;
     ProgressBar progressBar;
     BroadcastReceiver mReceiver;
-    long barcode;
+    String barcode;
 
     List<String> barcodes = new ArrayList<>();
     List<StockDisposalsEntity> DocumentLines = new ArrayList<>();
+
+    // Reference to Presenter
+    _StockDisposalsPresenter stockDisposalsPresenter = new StockDisposalsPresenter();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +69,9 @@ public class StockDisposals extends AppCompatActivity {
         else
             backgroundImage.setVisibility(View.VISIBLE);
 
+        // initialize view in Presenter
+        stockDisposalsPresenter.initializeView(this);
+
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -74,9 +82,12 @@ public class StockDisposals extends AppCompatActivity {
                 backgroundImage.setVisibility(View.INVISIBLE);
                 progressBar.setVisibility(View.VISIBLE);
 
+                barcode = intent.getStringExtra("SCAN_BARCODE1");
+
                 unregisterReceiver(mReceiver);
 
-                new StockDisposal().execute(intent.getStringExtra("SCAN_BARCODE1"));
+                // new StockDisposal().execute(intent.getStringExtra("SCAN_BARCODE1"));
+                stockDisposalsPresenter.requestSystemNumber(barcode, null, STOCK_DISPOSALS);
 
             }
         };
@@ -89,6 +100,29 @@ public class StockDisposals extends AppCompatActivity {
         ActionBar actionbar = getSupportActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setHomeAsUpIndicator(R.drawable.back);*/
+
+    }
+
+    @Override
+    public void success(boolean isSuccessful) {
+
+        progressBar.setVisibility(View.INVISIBLE);
+
+        if(isSuccessful)
+            barcodes.add(0, barcode);
+        else{
+            barcodes.add(0, "B_" + barcode);
+            Toast.makeText(StockDisposals.this, "Operation failed to complete", Toast.LENGTH_SHORT).show();
+        }
+
+        if(barcodes.size() > 0)
+            backgroundImage.setVisibility(View.INVISIBLE);
+        else
+            backgroundImage.setVisibility(View.VISIBLE);
+
+        recyclerView.getAdapter().notifyDataSetChanged();
+
+        StockDisposals.this.registerReceiver(mReceiver, mFilter);
 
     }
 
@@ -178,7 +212,8 @@ public class StockDisposals extends AppCompatActivity {
                                 1,
                                 SharedPreferencesClass.getWarehouseCode(),
                                 SerialNumbers
-                        ));
+                        )
+                );
 
                 stockDisposed = RetrofitInstance.stockDisposal(SharedPreferencesClass.getCookie(), new DocumentLines(DocumentLines));
 

@@ -17,6 +17,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.logistics.riftvalley.R;
+import com.logistics.riftvalley.data.model.SalesOrder.SalesOrderDocumentLinesSerialNumbers;
 import com.logistics.riftvalley.data.model.SalesOrder.SalesOrderList;
 import com.logistics.riftvalley.Retrofit.RetrofitInstance;
 import com.logistics.riftvalley.Utilities.SharedPreferences.SharedPreferencesClass;
@@ -28,7 +29,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SalesOrdersList extends AppCompatActivity {
+public class SalesOrdersList extends AppCompatActivity implements _SalesView{
 
     Toolbar toolbar;
     RecyclerView recyclerView;
@@ -36,6 +37,9 @@ public class SalesOrdersList extends AppCompatActivity {
     TextView label;
     Button retry;
     List<SalesOrderList> salesOrderLists = new ArrayList<>();
+
+    // Reference to Presenter
+    _SalesPresenter salesPresenter = new SalesPresenter();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +60,69 @@ public class SalesOrdersList extends AppCompatActivity {
         ActionBar actionbar = getSupportActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setHomeAsUpIndicator(R.drawable.back);
+
+        // initialize view in Presenter
+        salesPresenter.initializeView(this);
+
+        // request salesOrdersList
+        salesPresenter.requestSalesOrdersList();
+
+        retry.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                retry.setVisibility(View.INVISIBLE);
+                progressBar.setVisibility(View.VISIBLE);
+                label.setVisibility(View.INVISIBLE);
+
+                // new GetSalesOrdersList().execute();
+
+            }
+        });
+
+    }
+
+    @Override
+    public void success(boolean isSuccessful) {
+
+        if(!isSuccessful){
+            retry.setVisibility(View.VISIBLE);
+        }
+
+    }
+
+    @Override
+    public void salesOrdersList(List<SalesOrderList> salesOrderList) {
+
+        salesOrderLists = salesOrderList;
+
+        if(salesOrderLists.size() > 0){
+            progressBar.setVisibility(View.INVISIBLE);
+            recyclerView.setAdapter(new RecyclerViewAdapter());
+            recyclerView.setLayoutManager(new LinearLayoutManager(SalesOrdersList.this));
+        }
+        else{
+
+            progressBar.setVisibility(View.INVISIBLE);
+            label.setVisibility(View.VISIBLE);
+            label.setText("No Sales Found");
+            retry.setVisibility(View.VISIBLE);
+        }
+
+    }
+
+    @Override
+    public void dispatchProcessResponse(boolean isSuccessful, String message, String operationSource) {
+
+    }
+
+    @Override
+    public void dispatchGoodsResponse(boolean isSuccessful, String message) {
+
+    }
+
+    @Override
+    public void isShippingCaseNumberAdded(boolean isSuccessful, String message, SalesOrderDocumentLinesSerialNumbers salesOrderDocumentLinesSerialNumbers) {
 
     }
 
@@ -116,19 +183,6 @@ public class SalesOrdersList extends AppCompatActivity {
                 label.setVisibility(View.VISIBLE);
                 label.setText("No Sales Found");
                 retry.setVisibility(View.VISIBLE);
-
-                retry.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-
-                        retry.setVisibility(View.INVISIBLE);
-                        progressBar.setVisibility(View.VISIBLE);
-                        label.setVisibility(View.INVISIBLE);
-
-                        new GetSalesOrdersList().execute();
-
-                    }
-                });
             }
         }
     }
@@ -197,9 +251,11 @@ public class SalesOrdersList extends AppCompatActivity {
 
         progressBar.setVisibility(View.VISIBLE);
 
-        salesOrderLists.clear();
+        salesPresenter.requestSalesOrdersList();
 
-        new GetSalesOrdersList().execute();
+        // salesOrderLists.clear();
+
+        // new GetSalesOrdersList().execute();
 
     }
 

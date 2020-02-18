@@ -5,12 +5,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,6 +27,7 @@ import android.widget.Toast;
 import com.logistics.riftvalley.R;
 import com.logistics.riftvalley.data.model.SalesOrder.DeliveryDocument;
 import com.logistics.riftvalley.data.model.SalesOrder.SalesOrderDocumentLinesSerialNumbers;
+import com.logistics.riftvalley.data.model.SalesOrder.SalesOrderList;
 import com.logistics.riftvalley.data.model.SalesOrder.SalesOrdersDocumentLines;
 import com.logistics.riftvalley.Retrofit.RetrofitInstance;
 import com.logistics.riftvalley.Utilities.SharedPreferences.SharedPreferencesClass;
@@ -35,7 +39,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Dispatch extends AppCompatActivity implements DispatchDialog.DispatchDialogListener, ShippingCaseNumberDialog.ScanDialog{
+public class Dispatch extends AppCompatActivity implements DispatchDialog.DispatchDialogListener, ShippingCaseNumberDialog.ScanDialog, _SalesView{
 
     Toolbar toolbar;
     RecyclerView recyclerView;
@@ -46,7 +50,14 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
     BroadcastReceiver mReceiver;
 
     String barcode;
+    String shippingCaseNumber;
     List<SalesOrderDocumentLinesSerialNumbers> barcodes = new ArrayList<>();
+
+    // dispatch methods
+    final String EXISTS = "EXISTS";
+
+    // Reference to Presenter
+    _SalesPresenter salesPresenter = new SalesPresenter();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +83,9 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
         actionbar.setHomeAsUpIndicator(R.drawable.back);
 */
 
+        // initialize view in Presenter
+        salesPresenter.initializeView(this);
+
         if(barcodes.size() > 0)
             backgroundImage.setVisibility(View.INVISIBLE);
         else
@@ -96,6 +110,23 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
                     Bundle args = new Bundle();
                     args.putString("barcode", intent.getStringExtra("SCAN_BARCODE1"));
 
+                    Log.d("DispatchScan", " *** 1st point *** ");
+
+                    // check if serial number has not been scanned already
+                    for(SalesOrderDocumentLinesSerialNumbers scannedBarcodes: barcodes){
+                        if(scannedBarcodes.getInternalSerialNumber().equalsIgnoreCase(barcode) || scannedBarcodes.getInternalSerialNumber().equalsIgnoreCase("B_" + barcode)){
+                            Toast.makeText(Dispatch.this, "Sorry, carton has already been scanned", Toast.LENGTH_LONG).show();
+                            progressBar.setVisibility(View.INVISIBLE);
+
+                            mFilter = new IntentFilter("nlscan.action.SCANNER_RESULT");
+                            Dispatch.this.registerReceiver(mReceiver, mFilter);
+
+                            return;
+                        }
+                    }
+
+                    Log.d("DispatchScan", " *** Over HERE *** ");
+
                     DialogFragment dialog = new ShippingCaseNumberDialog();
                     dialog.setArguments(args);
                     dialog.show(getSupportFragmentManager(), "Dialog");
@@ -104,9 +135,95 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
             }
         };
 
-        mFilter= new IntentFilter("nlscan.action.SCANNER_RESULT");
+        mFilter = new IntentFilter("nlscan.action.SCANNER_RESULT");
         this.registerReceiver(mReceiver, mFilter);
 
+    }
+
+    @Override
+    public void success(boolean isSuccessful) {
+
+        progressBar.setVisibility(View.GONE);
+
+        if(barcodes.size() > 0) {
+
+            int validSerialNumbersCount = 0;
+
+            for(SalesOrderDocumentLinesSerialNumbers salesOrderDocumentLinesSerialNumbers : barcodes){
+
+                if(salesOrderDocumentLinesSerialNumbers.getInternalSerialNumber().startsWith("B_"))
+                    continue;
+                else
+                    validSerialNumbersCount += 1;
+
+            }
+
+            String validSerialNumbers = validSerialNumbersCount + "/" + SharedPreferencesClass.getSalesOrderQuantity();
+
+            count.setText(validSerialNumbers);
+
+            backgroundImage.setVisibility(View.INVISIBLE);
+            count.setVisibility(View.VISIBLE);
+
+        }
+        else{
+            backgroundImage.setVisibility(View.VISIBLE);
+            count.setVisibility(View.INVISIBLE);
+        }
+
+        recyclerView.getAdapter().notifyDataSetChanged();
+
+        Dispatch.this.registerReceiver(mReceiver, mFilter);
+
+    }
+
+    @Override
+    public void salesOrdersList(List<SalesOrderList> salesOrderLists) {
+
+    }
+
+    @Override
+    public void dispatchProcessResponse(boolean isSuccessful, String message, String operationSource) {
+
+        // if isSuccessful returns true then SerialNumber exists in SAP thus set Shipping Case Number to the SAP serial number
+        if(isSuccessful){
+            salesPresenter.setShippingCaseNumberForSerialNumberSAP(barcode, shippingCaseNumber);
+        }
+        else{
+            barcodes.add(0, new SalesOrderDocumentLinesSerialNumbers(null, "B_" + barcode, 0));
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+            success(false);
+        }
+    }
+
+    @Override
+    public void dispatchGoodsResponse(boolean isSuccessful, String message) {
+
+        progressBar.setVisibility(View.INVISIBLE);
+
+        if(isSuccessful){
+            Toast.makeText(Dispatch.this, "Goods successfully dispatched", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+        else{
+            Toast.makeText(Dispatch.this, "Sorry, operation failed", Toast.LENGTH_SHORT).show();
+            // finish();
+        }
+    }
+
+    @Override
+    public void isShippingCaseNumberAdded(boolean isSuccessful, String message, SalesOrderDocumentLinesSerialNumbers salesOrderDocumentLinesSerialNumbers) {
+
+        if(isSuccessful){
+            // add barcode to list
+            barcodes.add(0, salesOrderDocumentLinesSerialNumbers);
+            success(true);
+        }
+        else{
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+            barcodes.add(0, new SalesOrderDocumentLinesSerialNumbers(null, "B_" + barcode, 0));
+            success(false);
+        }
     }
 
     public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
@@ -143,6 +260,7 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
             delete.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+
                     barcodes.remove(getAdapterPosition());
                     recyclerView.getAdapter().notifyDataSetChanged();
 
@@ -160,7 +278,6 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
         }
 
         public void bind(int position) {
-
             if(barcodes.get(position).getInternalSerialNumber().startsWith("B_")){
                 delete.setVisibility(View.INVISIBLE);
                 barcode.setTextColor(getResources().getColor(R.color.red));
@@ -174,7 +291,6 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
                 barcode.setText("" + barcodes.get(position).getInternalSerialNumber());
                 return;
             }
-
         }
     }
 
@@ -205,7 +321,6 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
 
         boolean isInList = false;
         boolean max = false;
-        boolean stockTransferResponse = false;
         JSONObject jsonResponse;
 
         @Override
@@ -227,9 +342,9 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
                     *   4. Add carton serialNumber to the barcodes list
                     * */
 
-
-
                     for(int i = 0; i < jsonArray.length(); ++i){
+
+                        // replace with Java Stream
                         for(SalesOrderDocumentLinesSerialNumbers scannedBarcodes: barcodes){
                             if(scannedBarcodes.getInternalSerialNumber().equals(values[0].trim())){
                                 isInList = true;
@@ -238,17 +353,20 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
                         }
 
                         // Add shipping case number to serial number
-                        // values[0] = serialNumber **** values[1] = shippingCaseNumber
+                        // values[0] = serialNumber
+                        // values[1] = shippingCaseNumber
                         if(!RetrofitInstance.setShippingCaseNumber(SharedPreferencesClass.getCookie(), values[0], Integer.valueOf(values[1].trim()))) {
                             barcodes.add(0, new SalesOrderDocumentLinesSerialNumbers(null, "B_" + values[0], 0));
                             return null;
                         }
 
+                        // check if max has not been reached yet
                         if(barcodes.size() == SharedPreferencesClass.getSalesOrderQuantity()){
                             max = true;
                             return null;
                         }
 
+                        // add barcode to list
                         barcodes.add(0, new SalesOrderDocumentLinesSerialNumbers(jsonArray.getJSONObject(i).getString("MfrSerialNo"),
                                 jsonArray.getJSONObject(i).getString("SerialNumber"), jsonArray.getJSONObject(i).getInt("SystemNumber")));
 
@@ -298,8 +416,10 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
 
     public class CreateDeliveryNote extends AsyncTask<String, Void, Void> {
 
-        int BaseType = 17;
-        int BaseLine = 0;
+        List<SalesOrderDocumentLinesSerialNumbers> validBarcodes = new ArrayList<>();
+
+        int SALES_BASE_TYPE = 17;
+        int SALES_BASE_LINE = 0;
         JSONObject jsonResponseSalesOrderQuantity;
         boolean deliveryCreated;
 
@@ -310,12 +430,15 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
 
             for(int i = 0; i < barcodes.size(); ++i){
                 if(barcodes.get(i).getInternalSerialNumber().startsWith("B_"))
-                    barcodes.remove(i);
+                    continue;
+                else
+                    validBarcodes.add(barcodes.get(i));
             }
 
-            documentLines.add(new SalesOrdersDocumentLines(SharedPreferencesClass.getSalesOrderItemCode(), SharedPreferencesClass.getWarehouseCode(), barcodes.size(), BaseType, SharedPreferencesClass.getSalesOrderDocEntry(), BaseLine, barcodes));
+            documentLines.add(new SalesOrdersDocumentLines(SharedPreferencesClass.getSalesOrderItemCode(), SharedPreferencesClass.getWarehouseCode(), validBarcodes.size(), SALES_BASE_TYPE, SharedPreferencesClass.getSalesOrderDocEntry(), SALES_BASE_LINE, validBarcodes));
 
-            if(RetrofitInstance.createDeliveryNote(SharedPreferencesClass.getCookie(), new DeliveryDocument(SharedPreferencesClass.getSalesOrderCardCode(), documentLines))){
+            if(RetrofitInstance.createDeliveryNote(SharedPreferencesClass.getCookie(),
+                    new DeliveryDocument(SharedPreferencesClass.getSalesOrderCardCode(), documentLines))){
 
                 deliveryCreated = true;
 
@@ -351,21 +474,36 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
 
     @Override
     public void dispatchDialogOkClicked() {
-
         progressBar.setVisibility(View.VISIBLE);
-        new CreateDeliveryNote().execute();
+        // new CreateDeliveryNote().execute();
+
+        salesPresenter.dispatchGoods(barcodes);
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
-    public void ScanDialogOkClicked(String serialNumber, String shippingCaseNumber) {
-        new CheckSerialNumber().execute(serialNumber, shippingCaseNumber);
+    public void ScanDialogOkClicked(final String serialNumber, String shippingCaseNumber) {
+        this.shippingCaseNumber = shippingCaseNumber;
+
+/*        if(barcodes.stream().filter(new Predicate<SalesOrderDocumentLinesSerialNumbers>() {
+            @Override
+            public boolean test(SalesOrderDocumentLinesSerialNumbers s) {
+                return s.getInternalSerialNumber().equalsIgnoreCase(serialNumber);
+            }
+        }).count() > 0){
+            Toast.makeText(this, "Sorry, carton has already been scanned", Toast.LENGTH_LONG).show();
+            return;
+        }*/
+
+        // new CheckSerialNumber().execute(serialNumber, shippingCaseNumber);
+        salesPresenter.doesSerialNumberExistInSAP(serialNumber, EXISTS);
+
     }
 
     @Override
     public void ScanDialogCancelClicked() {
 
     }
-
 
 }

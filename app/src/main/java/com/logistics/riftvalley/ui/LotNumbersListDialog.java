@@ -1,4 +1,4 @@
-package com.logistics.riftvalley.ui.NewInventory;
+package com.logistics.riftvalley.ui;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -8,17 +8,22 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.logistics.riftvalley.R;
 import com.logistics.riftvalley.Utilities.SharedPreferences.SharedPreferencesClass;
 
-public class StackLocationDialog extends DialogFragment {
+import static com.logistics.riftvalley.Utilities.PublicStaticVariables.OVERFLOW_AREA;
+
+public class LotNumbersListDialog extends DialogFragment {
 
     public static String aisleCode;
 
     TextView stackLocationCode;
     TextView stackLocation;
+    RadioButton overflow;
+
     StackLocation mListener;
 
     @NonNull
@@ -31,6 +36,7 @@ public class StackLocationDialog extends DialogFragment {
 
         stackLocationCode = view.findViewById(R.id.stackLocationCode);
         stackLocation = view.findViewById(R.id.location);
+        overflow = view.findViewById(R.id.overflow);
 
         switch(SharedPreferencesClass.getWarehouseCode()){
             case "LOGBAY10":
@@ -57,6 +63,14 @@ public class StackLocationDialog extends DialogFragment {
                         mListener.StackLocationOkClicked(stackLocation.getText().toString());
                     }
                 });
+
+        overflow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mListener.StackLocationOkClicked(OVERFLOW_AREA);
+                dismiss();
+            }
+        });
 
         return dialog.create();
 

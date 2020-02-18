@@ -11,11 +11,21 @@ import com.logistics.riftvalley.data.model.Entity.Warehouses;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransfer;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransferLines;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransferLinesBinAllocations;
+import com.logistics.riftvalley.data.model.SalesOrder.SalesOrderList;
+import com.logistics.riftvalley.data.model.SalesOrder.SalesOrdersDocumentLines;
+import com.logistics.riftvalley.data.model.StockDisposals.DocumentLines;
+import com.logistics.riftvalley.data.model.StockDisposals.StockDisposalsEntity;
 import com.logistics.riftvalley.data.model._API_Helper;
 import com.logistics.riftvalley.ui.Login._LoginPresenter;
 import com.logistics.riftvalley.ui.NewInventory._NewInventoryPresenter;
+import com.logistics.riftvalley.ui.StockMovements.ProductionReturn._ProductionReturnPresenter;
+import com.logistics.riftvalley.ui.StockMovements.Sale._SalesPresenter;
+import com.logistics.riftvalley.ui.StockMovements.StockDisposals._StockDisposalsPresenter;
 import com.logistics.riftvalley.ui.StockMovements.Transfers._TransfersPresenter;
 import com.logistics.riftvalley.ui.StockMovements._WarehouseLocations_MovementsPresenter;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +33,10 @@ import java.util.List;
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.CHECK_IN;
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.CHECK_OUT;
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.MOVE_TO_DISPATCH_ACTIVITY;
+import static com.logistics.riftvalley.Utilities.PublicStaticVariables.MOVE_TO_DISPATCH_SALES;
+import static com.logistics.riftvalley.Utilities.PublicStaticVariables.MOVE_TO_FUMIGATION_SALES;
+import static com.logistics.riftvalley.Utilities.PublicStaticVariables.PRODUCTION_RETURN;
+import static com.logistics.riftvalley.Utilities.PublicStaticVariables.STOCK_DISPOSALS;
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.TPZ_WAREHOUSE;
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.IN_WAREHOUSE_ACTIVITY;
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.ITEM_CODE;
@@ -42,6 +56,9 @@ public class DataManager implements _DataManager{
     _NewInventoryPresenter newInventoryPresenter;
     _WarehouseLocations_MovementsPresenter warehouseLocations_movementsPresenter;
     _TransfersPresenter transfersPresenter;
+    _ProductionReturnPresenter productionReturnPresenter;
+    _StockDisposalsPresenter stockDisposalsPresenter;
+    _SalesPresenter salesPresenter;
 
     // new inventory variables
     String warehouseCode;
@@ -72,6 +89,21 @@ public class DataManager implements _DataManager{
     @Override
     public void initializeTransfersPresenter(_TransfersPresenter transfersPresenter) {
         this.transfersPresenter = transfersPresenter;
+    }
+
+    @Override
+    public void initializeProductionReturnPresenter(_ProductionReturnPresenter productionReturnPresenter) {
+        this.productionReturnPresenter = productionReturnPresenter;
+    }
+
+    @Override
+    public void initializeStockDisposalsPresenter(_StockDisposalsPresenter stockDisposalsPresenter) {
+        this.stockDisposalsPresenter = stockDisposalsPresenter;
+    }
+
+    @Override
+    public void initializeSalesPresenter(_SalesPresenter salesPresenter) {
+        this.salesPresenter = salesPresenter;
     }
 
     @Override
@@ -123,7 +155,7 @@ public class DataManager implements _DataManager{
         // IF serialNumber > 0 (zero) means all's good ELSE something is wrong
         if(systemNumber > 0){
             if(serialNumberTransferActivityRequestSource == SCAN_NEW_INVENTORY)
-                api_helper.transferSerialNumberSAP(generateStockTransfersJson(systemNumber));
+                api_helper.transferSerialNumberSAP(generateStockTransfersJson(systemNumber, downloadedBinLocationAbsEntry));
             else if(serialNumberTransferActivityRequestSource == IN_WAREHOUSE_ACTIVITY)
                 api_helper.transferSerialNumberSAP(generateStockTransferJsonForStockMovements_InWarehouse(systemNumber, downloadedBinLocationAbsEntry));
             else if(serialNumberTransferActivityRequestSource == MOVE_TO_DISPATCH_ACTIVITY)
@@ -132,6 +164,12 @@ public class DataManager implements _DataManager{
                 api_helper.transferSerialNumberSAP(generateStockTransfersJson_CheckOut(systemNumber));
             else if(serialNumberTransferActivityRequestSource == CHECK_IN)
                 api_helper.transferSerialNumberSAP(generateStockTransfersJson_CheckIn(systemNumber, downloadedBinLocationAbsEntry));
+            else if(serialNumberTransferActivityRequestSource == PRODUCTION_RETURN)
+                api_helper.transferSerialNumberSAP(generateStockTransfersJson_ProductionReturn(systemNumber));
+            else if(serialNumberTransferActivityRequestSource == STOCK_DISPOSALS)
+                api_helper.stockDisposal(generateDocumentLinesObject(systemNumber));
+            else if(serialNumberTransferActivityRequestSource == MOVE_TO_FUMIGATION_SALES || serialNumberTransferActivityRequestSource == MOVE_TO_DISPATCH_SALES)
+                api_helper.transferSerialNumberSAP(generateStockTransfersJson_Sales(systemNumber, downloadedBinLocationAbsEntry));
         }
         else{
             if(serialNumberTransferActivityRequestSource == SCAN_NEW_INVENTORY)
@@ -139,6 +177,12 @@ public class DataManager implements _DataManager{
             else if(serialNumberTransferActivityRequestSource == IN_WAREHOUSE_ACTIVITY || serialNumberTransferActivityRequestSource == MOVE_TO_DISPATCH_ACTIVITY
                     || serialNumberTransferActivityRequestSource == CHECK_OUT || serialNumberTransferActivityRequestSource == CHECK_IN)
                 transfersPresenter.serialNumberSystemNumber(systemNumber);
+            else if(serialNumberTransferActivityRequestSource == PRODUCTION_RETURN)
+                productionReturnPresenter.success(false);
+            else if(serialNumberTransferActivityRequestSource == STOCK_DISPOSALS)
+                stockDisposalsPresenter.success(false);
+            else if(serialNumberTransferActivityRequestSource == MOVE_TO_DISPATCH_ACTIVITY || serialNumberTransferActivityRequestSource == MOVE_TO_DISPATCH_SALES)
+                salesPresenter.success(false);
         }
     }
 
@@ -149,12 +193,15 @@ public class DataManager implements _DataManager{
 
     @Override
     public void serialNumberTransferResponse(boolean isSuccessful) {
-
         if(serialNumberTransferActivityRequestSource == SCAN_NEW_INVENTORY)
             newInventoryPresenter.transferRequestResponse(isSuccessful);
         else if(serialNumberTransferActivityRequestSource == IN_WAREHOUSE_ACTIVITY || serialNumberTransferActivityRequestSource == MOVE_TO_DISPATCH_ACTIVITY
                 || serialNumberTransferActivityRequestSource == CHECK_OUT || serialNumberTransferActivityRequestSource == CHECK_IN)
             transfersPresenter.transferRequestResponse(isSuccessful);
+        else if(serialNumberTransferActivityRequestSource == PRODUCTION_RETURN)
+            productionReturnPresenter.success(isSuccessful);
+        else if(serialNumberTransferActivityRequestSource == MOVE_TO_FUMIGATION_SALES || serialNumberTransferActivityRequestSource == MOVE_TO_DISPATCH_SALES)
+            salesPresenter.success(isSuccessful);
     }
 
     @Override
@@ -162,7 +209,136 @@ public class DataManager implements _DataManager{
 
     }
 
-    public StockTransfer generateStockTransfersJson(int systemNumber){
+    @Override
+    public void stockDisposal(DocumentLines documentLines) {
+
+    }
+
+    @Override
+    public void stockDisposalResponse(boolean isSuccessful) {
+        stockDisposalsPresenter.success(isSuccessful);
+    }
+
+    @Override
+    public void requestSalesOrderList() {
+        api_helper.requestSalesOrderList();
+    }
+
+    @Override
+    public void salesOrderListResponse(String salesOrdersJsonString) {
+
+        List<SalesOrderList> salesOrderLists = new ArrayList<>();
+
+        if(salesOrdersJsonString != null){
+            try {
+                JSONObject jsonObject;
+
+                jsonObject = new JSONObject(salesOrdersJsonString);
+                JSONArray jsonArray = jsonObject.getJSONArray("value");
+
+                for(int i = 0; i < jsonArray.length(); i++){
+
+                    JSONObject ordersObject = jsonArray.getJSONObject(i).getJSONObject("Orders");
+                    JSONObject ordersDocumentLinesObject = jsonArray.getJSONObject(i).getJSONObject("Orders/DocumentLines");
+
+                    salesOrderLists.add(new SalesOrderList(ordersObject.getString("CardCode"),
+                            ordersObject.getString("CardName"),
+                            ordersDocumentLinesObject.getString("ItemCode"),
+                            ordersDocumentLinesObject.getInt("Quantity") == ordersDocumentLinesObject.getInt("RemainingOpenQuantity") ? ordersDocumentLinesObject.getInt("Quantity"): ordersDocumentLinesObject.getInt("RemainingOpenQuantity"),
+                            ordersObject.getInt("DocEntry")));
+
+                }
+
+                salesPresenter.salesOrdersList(salesOrderLists);
+
+            }
+            catch (Exception e){
+                salesPresenter.success(false);
+            }
+
+        }
+        else
+            salesPresenter.success(false);
+
+    }
+
+    @Override
+    public void doesSerialNumberExistInSAP(String serialNumber) {
+        api_helper.doesSerialNumberExistInSAP(serialNumber);
+    }
+
+    @Override
+    public void setShippingCaseNumberToSerialNumber(String serialNumber, String shippingCaseNumber) {
+        api_helper.setShippingCaseNumberToSerialNumber(serialNumber, shippingCaseNumber);
+    }
+
+    public void salesOrderDispatch(boolean isSuccessful){
+        salesPresenter.success(isSuccessful);
+    }
+
+    @Override
+    public void dispatchProcesses(boolean isSuccessful, String message) {
+        salesPresenter.dispatchProcessesRequests(isSuccessful, message);
+    }
+
+    @Override
+    public void shippingCaseNumber(boolean isSuccessful, String message, JSONArray jsonArray) {
+        salesPresenter.shippingCaseNumber(isSuccessful, message, jsonArray);
+    }
+
+    @Override
+    public void dispatchGoods(List<SalesOrdersDocumentLines> documentLines) {
+        api_helper.dispatchGoods(documentLines);
+    }
+
+    @Override
+    public void dispatchGoodsResponse(boolean isSuccessful, String message) {
+        salesPresenter.dispatchGoodsResponse(isSuccessful, message);
+    }
+
+    @Override
+    public void getLotNumbers() {
+        api_helper.getLotNumbers();
+    }
+
+    @Override
+    public void returnLotNumbers(String lotNumberJson) {
+        transfersPresenter.lotNumbers(lotNumberJson);
+    }
+
+    public StockTransfer generateStockTransfersJson(int systemNumber, int binAbsEntry){
+
+        String fromWarehouse = TPZ_WAREHOUSE;
+        String warehouseCode = SharedPreferencesClass.getWarehouseCode();
+
+        int quantity = 1;
+        String allowNegativeQuantity = "tNO";
+        int serialAndBatchNumbersBaseLine = 0;
+        String binActionType = "batToWarehouse";
+        int baseLineNumber = 0;
+
+
+        List<SerialNumbers> serialNumbers = new ArrayList<>();
+        SerialNumbers serialNumbersObj = new SerialNumbers(barcode, systemNumber, quantity);
+        serialNumbers.add(serialNumbersObj);
+
+        StockTransferLinesBinAllocations stockTransferLinesBinAllocationsObj = new StockTransferLinesBinAllocations(binAbsEntry, quantity,
+                allowNegativeQuantity, serialAndBatchNumbersBaseLine, binActionType, baseLineNumber);
+        List<StockTransferLinesBinAllocations> stockTransferLinesBinAllocations = new ArrayList<>();
+        List<StockTransferLines> stockTransferLines = new ArrayList<>();
+        stockTransferLinesBinAllocations.add(stockTransferLinesBinAllocationsObj);
+
+        StockTransferLines stockTransferLinesObj = new StockTransferLines(ITEM_CODE, ITEM_CODE, quantity, barcode, warehouseCode, fromWarehouse, serialNumbers,
+                stockTransferLinesBinAllocations);
+
+        stockTransferLines.add(stockTransferLinesObj);
+
+        return new StockTransfer(fromWarehouse, warehouseCode, stockTransferLines);
+
+
+    }
+
+    /*public StockTransfer generateStockTransfersJson(int systemNumber){
 
         String fromWarehouse = TPZ_WAREHOUSE;
         int quantity = 1;
@@ -179,7 +355,7 @@ public class DataManager implements _DataManager{
 
         return stockTransfer;
 
-    }
+    }*/
 
     public StockTransfer generateStockTransferJsonForStockMovements_InWarehouse(int systemNumber, int binAbsEntry){
 
@@ -195,14 +371,13 @@ public class DataManager implements _DataManager{
 
         //Serial Numbers
         SerialNumbers serialNumbersObj = new SerialNumbers(barcode, systemNumber, quantity);
+        List<SerialNumbers> serialNumbers = new ArrayList<>();
+        serialNumbers.add(serialNumbersObj);
+
         StockTransferLinesBinAllocations stockTransferLinesBinAllocationsObj = new StockTransferLinesBinAllocations(binAbsEntry, quantity,
                 allowNegativeQuantity, serialAndBatchNumbersBaseLine, binActionType, baseLineNumber);
-
-        List<SerialNumbers> serialNumbers = new ArrayList<>();
         List<StockTransferLinesBinAllocations> stockTransferLinesBinAllocations = new ArrayList<>();
         List<StockTransferLines> stockTransferLines = new ArrayList<>();
-
-        serialNumbers.add(serialNumbersObj);
         stockTransferLinesBinAllocations.add(stockTransferLinesBinAllocationsObj);
 
         StockTransferLines stockTransferLinesObj = new StockTransferLines(ITEM_CODE, ITEM_CODE, quantity, barcode, warehouseCode, fromWarehouse, serialNumbers,
@@ -298,6 +473,85 @@ public class DataManager implements _DataManager{
 
         StockTransferLines stockTransferLinesObj = new StockTransferLines(ITEM_CODE, ITEM_CODE, quantity, barcode, warehouseCode, fromWarehouse, serialNumbers,
                 null);
+
+        stockTransferLines.add(stockTransferLinesObj);
+
+        StockTransfer stockTransfer = new StockTransfer(fromWarehouse, warehouseCode, stockTransferLines);
+
+        return stockTransfer;
+
+    }
+
+    public StockTransfer generateStockTransfersJson_ProductionReturn(int systemNumber){
+
+        // All stock movements first go to the TRANSIT warehouse
+        String toWarehouseCode = TPZ_WAREHOUSE;
+        String fromWarehouse = SharedPreferencesClass.getWarehouseCode();
+
+        int quantity = 1;
+
+        //Serial Numbers
+        SerialNumbers serialNumbersObj = new SerialNumbers(barcode, systemNumber, quantity);
+        List<SerialNumbers> serialNumbers = new ArrayList<>();
+        serialNumbers.add(serialNumbersObj);
+
+        // Bin location
+        List<StockTransferLinesBinAllocations> stockTransferLinesBinAllocations = new ArrayList<>();
+
+        StockTransferLines stockTransferLinesObj = new StockTransferLines(ITEM_CODE, ITEM_CODE, quantity, barcode, StaticVariables.FROMWAREHOUSE, fromWarehouse, serialNumbers, stockTransferLinesBinAllocations);
+        List<StockTransferLines> stockTransferLines = new ArrayList<>();
+        stockTransferLines.add(stockTransferLinesObj);
+
+        StockTransfer stockTransfer = new StockTransfer(fromWarehouse, toWarehouseCode, stockTransferLines);
+
+        return stockTransfer;
+
+    }
+
+    public DocumentLines generateDocumentLinesObject(int systemNumber){
+
+        List<SerialNumbers> SerialNumbers = new ArrayList<>();
+        List<StockDisposalsEntity> DocumentLines = new ArrayList<>();
+
+        SerialNumbers.add(new SerialNumbers(barcode, systemNumber, 1));
+
+        DocumentLines.add(new StockDisposalsEntity(
+                        ITEM_CODE,
+                        1,
+                        SharedPreferencesClass.getWarehouseCode(),
+                        SerialNumbers
+                )
+        );
+
+        return new DocumentLines(DocumentLines);
+    }
+
+    public StockTransfer generateStockTransfersJson_Sales(int systemNumber, int binAbsEntry){
+
+        String warehouseCode = SharedPreferencesClass.getWarehouseCode();
+        String fromWarehouse = SharedPreferencesClass.getWarehouseCode();
+        String itemCode = SharedPreferencesClass.getSalesOrderItemCode();
+        int quantity = 1;
+        String allowNegativeQuantity = "tNO";
+        int serialAndBatchNumbersBaseLine = 0;
+        String binActionType = "batToWarehouse";
+        int baseLineNumber = 0;
+
+        // Serial Numbers
+        SerialNumbers serialNumbersObj = new SerialNumbers(barcode, systemNumber, quantity);
+        List<SerialNumbers> serialNumbers = new ArrayList<>();
+
+        // Bin Locations
+        StockTransferLinesBinAllocations stockTransferLinesBinAllocationsObj = new StockTransferLinesBinAllocations(binAbsEntry, quantity,
+                allowNegativeQuantity, serialAndBatchNumbersBaseLine, binActionType, baseLineNumber);
+        List<StockTransferLinesBinAllocations> stockTransferLinesBinAllocations = new ArrayList<>();
+        List<StockTransferLines> stockTransferLines = new ArrayList<>();
+
+        serialNumbers.add(serialNumbersObj);
+        stockTransferLinesBinAllocations.add(stockTransferLinesBinAllocationsObj);
+
+        StockTransferLines stockTransferLinesObj = new StockTransferLines(itemCode, itemCode, quantity, barcode, warehouseCode, fromWarehouse, serialNumbers,
+                stockTransferLinesBinAllocations);
 
         stockTransferLines.add(stockTransferLinesObj);
 

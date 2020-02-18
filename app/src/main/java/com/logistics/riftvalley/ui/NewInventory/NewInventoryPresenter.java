@@ -1,7 +1,5 @@
 package com.logistics.riftvalley.ui.NewInventory;
 
-import android.util.Log;
-
 import com.logistics.riftvalley.data.DataManager;
 import com.logistics.riftvalley.data._DataManager;
 import com.logistics.riftvalley.data.model.Entity.Warehouses;

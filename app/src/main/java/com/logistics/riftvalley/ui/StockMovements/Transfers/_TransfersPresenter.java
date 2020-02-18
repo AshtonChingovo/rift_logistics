@@ -8,6 +8,8 @@ public interface _TransfersPresenter {
 
     void initializeTransfersView( _TransfersView transfersView);
 
+    void initializeTransfersView( _GradeReclassificationView gradeReclassificationView);
+
     void requestStockTransfer();
 
     void transferRequestResponse(boolean isSuccessful);
@@ -21,5 +23,9 @@ public interface _TransfersPresenter {
 
     // system number request result
     void serialNumberSystemNumber(int systemNumber);
+
+    void getLotNumberList();
+
+    void lotNumbers(String lotNumbersJsonString);
 
 }

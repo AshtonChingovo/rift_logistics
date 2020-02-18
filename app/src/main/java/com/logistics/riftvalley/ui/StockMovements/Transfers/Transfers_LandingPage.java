@@ -15,6 +15,7 @@ public class Transfers_LandingPage extends AppCompatActivity implements InterWar
     Toolbar toolbar;
     CardView interWarehouseMovementCard;
     CardView inWarehouseMovementCard;
+    CardView gradeTransferCard;
 
     DialogFragment dialog;
 
@@ -25,6 +26,7 @@ public class Transfers_LandingPage extends AppCompatActivity implements InterWar
 
         interWarehouseMovementCard = findViewById(R.id.interWareHouseMovementCard);
         inWarehouseMovementCard = findViewById(R.id.inWarehouseMovement);
+        gradeTransferCard = findViewById(R.id.gradeTransferCard);
 
         interWarehouseMovementCard.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -39,6 +41,16 @@ public class Transfers_LandingPage extends AppCompatActivity implements InterWar
             public void onClick(View v) {
 
                 Intent intent = new Intent(Transfers_LandingPage.this, InWarehouse.class);
+                startActivity(intent);
+
+            }
+        });
+
+        gradeTransferCard.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent = new Intent(Transfers_LandingPage.this, GradeReclassification.class);
                 startActivity(intent);
 
             }

@@ -300,9 +300,9 @@ public class RetrofitInstance {
         } catch (IOException e) {
             e.printStackTrace();
             Log.i("ScanningProcess", "SalesOrders# Error: " + e.toString());
+            return null;
         }
 
-        return null;
 
     }
 
@@ -414,6 +414,32 @@ public class RetrofitInstance {
         RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
 
         Call retrofitGET = retrofitAPI.getSalesOrderQuantity(cookie, url);
+
+        try {
+
+            response = retrofitGET.execute();
+
+            if(response.isSuccessful() && response.code() == 200)
+                return response.body().toString();
+            else
+                return null;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.i("ScanningProcess", "setShippingCaseNumber Error: " + e.toString());
+        }
+
+        return null;
+
+    }
+
+    public static String getLotNumbers(String cookie){
+
+        String url = "$crossjoin(BlanketAgreements,BlanketAgreements/BlanketAgreements_ItemsLines)?$expand=BlanketAgreements/BlanketAgreements_ItemsLines($select=ItemNo,U_LotNumber,U_PRFX,U_SFFX)";
+
+        RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
+
+        Call retrofitGET = retrofitAPI.getLotNumbers(cookie, url);
 
         try {
 

@@ -21,7 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.logistics.riftvalley.data.model.Entity.Warehouses;
-import com.logistics.riftvalley.ui.NewInventory.StackLocationDialog;
+import com.logistics.riftvalley.ui.StackLocationDialog;
 import com.logistics.riftvalley.R;
 import com.logistics.riftvalley.data.model.Entity.SerialNumbers;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransfer;
@@ -137,7 +137,6 @@ public class InWarehouse extends AppCompatActivity implements StackLocationDialo
             DialogFragment dialog = new StackLocationDialog();
             dialog.show(getSupportFragmentManager(), "Dialog");
             return;
-
         }
 
         SharedPreferencesClass.writeStackLocation((SharedPreferencesClass.getWarehouseCode() + "-" + stackLocation).trim().toUpperCase());

@@ -20,7 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.logistics.riftvalley.data.model.Entity.Warehouses;
-import com.logistics.riftvalley.ui.NewInventory.StackLocationDialog;
+import com.logistics.riftvalley.ui.StackLocationDialog;
 import com.logistics.riftvalley.data.model.Entity.SerialNumbers;
 import com.logistics.riftvalley.data.model.Entity.StaticVariables;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransfer;
@@ -46,6 +46,7 @@ public class CheckOut extends AppCompatActivity implements StackLocationDialog.S
     TextView movementType;
     ImageView backgroundImage;
     ProgressBar progressBar;
+
     IntentFilter mFilter;
     BroadcastReceiver mReceiver;
 
@@ -97,7 +98,6 @@ public class CheckOut extends AppCompatActivity implements StackLocationDialog.S
                 unregisterReceiver(mReceiver);
 
                 barcode = intent.getStringExtra(SCAN_BARCODE1);
-
 
                 // new TransferStock().execute(intent.getStringExtra("SCAN_BARCODE1"));
                 transfersPresenter.requestSystemNumber(intent.getStringExtra(SCAN_BARCODE1), null, CHECK_OUT);

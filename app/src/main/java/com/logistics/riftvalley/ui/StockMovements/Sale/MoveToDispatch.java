@@ -26,6 +26,8 @@ import com.logistics.riftvalley.data.model.NewInventory.StockTransferLines;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransferLinesBinAllocations;
 import com.logistics.riftvalley.Retrofit.RetrofitInstance;
 import com.logistics.riftvalley.Utilities.SharedPreferences.SharedPreferencesClass;
+import com.logistics.riftvalley.data.model.SalesOrder.SalesOrderDocumentLinesSerialNumbers;
+import com.logistics.riftvalley.data.model.SalesOrder.SalesOrderList;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,17 +36,24 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MoveToDispatch extends AppCompatActivity{
+import static com.logistics.riftvalley.Utilities.PublicStaticVariables.DISPATCH_AREA;
+import static com.logistics.riftvalley.Utilities.PublicStaticVariables.MOVE_TO_DISPATCH_SALES;
+
+public class MoveToDispatch extends AppCompatActivity implements _SalesView{
 
     Toolbar toolbar;
     RecyclerView recyclerView;
     ImageView backgroundImage;
     ProgressBar progressBar;
+    String stackLocation;
     String barcode;
     IntentFilter mFilter;
     BroadcastReceiver mReceiver;
 
     List<String> barcodes = new ArrayList<>();
+
+    // Reference to Presenter
+    _SalesPresenter salesPresenter = new SalesPresenter();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,8 +74,14 @@ public class MoveToDispatch extends AppCompatActivity{
 
         toolbar.setTitle("Move To Dispatch");
 
+        stackLocation = SharedPreferencesClass.getWarehouseCode() + "-" + DISPATCH_AREA;
+        SharedPreferencesClass.writeStackLocation(stackLocation);
+
         recyclerView.setAdapter(new RecyclerViewAdapter());
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        // initialize view in Presenter
+        salesPresenter.initializeView(this);
 
         // PDA scanning broadcast receiver
         mReceiver = new BroadcastReceiver() {
@@ -82,13 +97,60 @@ public class MoveToDispatch extends AppCompatActivity{
                 unregisterReceiver(mReceiver);
 
                 barcode = intent.getStringExtra("SCAN_BARCODE1");
-                new TransferStock().execute(intent.getStringExtra("SCAN_BARCODE1"));
+                // new TransferStock().execute(intent.getStringExtra("SCAN_BARCODE1"));
+                salesPresenter.moveToFumigation(barcode, null, MOVE_TO_DISPATCH_SALES );
 
             }
         };
 
         mFilter= new IntentFilter("nlscan.action.SCANNER_RESULT");
         this.registerReceiver(mReceiver, mFilter);
+
+    }
+
+    @Override
+    public void success(boolean isSuccessful) {
+
+        progressBar.setVisibility(View.INVISIBLE);
+
+        if(isSuccessful)
+            barcodes.add(0, barcode);
+        else{
+
+            barcodes.add(0, "B_" + barcode);
+
+            Toast.makeText(MoveToDispatch.this, "Operation failed to complete, try again", Toast.LENGTH_SHORT).show();
+
+        }
+
+        if(barcodes.size() > 0)
+            backgroundImage.setVisibility(View.INVISIBLE);
+        else
+            backgroundImage.setVisibility(View.VISIBLE);
+
+        recyclerView.getAdapter().notifyDataSetChanged();
+
+        MoveToDispatch.this.registerReceiver(mReceiver, mFilter);
+
+    }
+
+    @Override
+    public void salesOrdersList(List<SalesOrderList> salesOrderLists) {
+
+    }
+
+    @Override
+    public void dispatchProcessResponse(boolean isSuccessful, String message, String operationSource) {
+
+    }
+
+    @Override
+    public void dispatchGoodsResponse(boolean isSuccessful, String message) {
+
+    }
+
+    @Override
+    public void isShippingCaseNumberAdded(boolean isSuccessful, String message, SalesOrderDocumentLinesSerialNumbers salesOrderDocumentLinesSerialNumbers) {
 
     }
 
@@ -160,7 +222,7 @@ public class MoveToDispatch extends AppCompatActivity{
 
             // Get scanned carton's system number
             downloadedSystemNumber = RetrofitInstance.getCartonSystemNumber(SharedPreferencesClass.getCookie(), values[0]);
-            stackLocation = SharedPreferencesClass.getWarehouseCode() + "-DISPATCH";
+            stackLocation = SharedPreferencesClass.getWarehouseCode() + "-" + DISPATCH_AREA;
 
             if(downloadedSystemNumber != null){
                 try {
