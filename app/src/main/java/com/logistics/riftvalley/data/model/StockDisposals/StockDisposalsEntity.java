@@ -1,6 +1,7 @@
 package com.logistics.riftvalley.data.model.StockDisposals;
 
 import com.logistics.riftvalley.data.model.Entity.SerialNumbers;
+import com.logistics.riftvalley.data.model.GoodReceipt.DocumentLinesBinAllocations;
 
 import java.util.List;
 

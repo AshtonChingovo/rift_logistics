@@ -15,9 +15,11 @@ public class PublicStaticVariables {
     public static final int STOCK_DISPOSALS = 10;
     public static final int MOVE_TO_FUMIGATION_SALES = 11;
     public static final int MOVE_TO_DISPATCH_SALES = 12;
+    public static final int GRADE_RECLASSIFICATION = 13;
 
     // serial number SAP B1 item code
-    public static String ITEM_CODE = "FF2RMS";
+    public static String ITEM_CODE = "";
+    public static int SERIAL_NUMBER_ID;
 
     public static final int SALES_BASE_TYPE = 17;
     public static final int SALES_BASE_LINE = 0;
@@ -50,5 +52,7 @@ public class PublicStaticVariables {
     * */
     public static String WAREHOUSE_CODE = "code";
     public static String WAREHOUSE_NAME = "warehouseName";
+
+    public static int SERIAL_AND_BATCH_NUMBER_BASELINE = 0;
 
 }

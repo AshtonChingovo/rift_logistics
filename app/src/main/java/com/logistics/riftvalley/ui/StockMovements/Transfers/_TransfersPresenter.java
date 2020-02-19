@@ -28,4 +28,10 @@ public interface _TransfersPresenter {
 
     void lotNumbers(String lotNumbersJsonString);
 
+    void doesSerialNumberExist(boolean doesSerialNumberExist, int systemNumber, int binAbsEntry);
+
+    void reclassifyGrade(String oldBarcode, int oldBarcodeSystemNumber, String newBarcode, int newBarcodeSystemNumber, int binAbsEntry, String itemCode, String lotNumber);
+
+    void reclassifyResult(boolean result);
+
 }

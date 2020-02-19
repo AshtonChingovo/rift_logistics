@@ -2,13 +2,14 @@ package com.logistics.riftvalley.Retrofit;
 
 import android.util.Log;
 
+import com.logistics.riftvalley.data.model.Entity.SerialNumbersPatchObject;
+import com.logistics.riftvalley.data.model.GoodReceipt.DocumentLineProperties;
 import com.logistics.riftvalley.data.model.SalesOrder.DeliveryDocument;
 import com.logistics.riftvalley.data.model.StockDisposals.DocumentLines;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransfer;
 import com.logistics.riftvalley.data.model.Entity.DispatchPictures;
 import com.logistics.riftvalley.data.model.Entity.ManufacturingSerialNumber;
 import com.logistics.riftvalley.data.model.Entity.Login;
-import com.google.gson.Gson;
 
 import org.json.JSONObject;
 
@@ -269,9 +270,9 @@ public class RetrofitInstance {
 
     public static String getSalesOrders(String cookie, String warehouseCode){
 
-        String url = "$crossjoin(Orders,Orders/DocumentLines)?$expand=Orders($select=CardCode, CardName,DocEntry), " +
-                "Orders/DocumentLines($select=ItemCode,Quantity,RemainingOpenQuantity) &$filter=Orders/DocEntry eq Orders/DocumentLines/DocEntry and " +
-                "Orders/DocumentStatus eq 'O' and Orders/DocumentLines/WarehouseCode  eq '" + warehouseCode + "' &$orderby=Orders/DocumentStatus desc, Orders/DocEntry desc";
+        String url = "$crossjoin(Orders,Orders/DocumentLineProperties)?$expand=Orders($select=CardCode, CardName,DocEntry), " +
+                "Orders/DocumentLineProperties($select=ItemCode,Quantity,RemainingOpenQuantity) &$filter=Orders/DocEntry eq Orders/DocumentLineProperties/DocEntry and " +
+                "Orders/DocumentStatus eq 'O' and Orders/DocumentLineProperties/WarehouseCode  eq '" + warehouseCode + "' &$orderby=Orders/DocumentStatus desc, Orders/DocEntry desc";
 
         RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
         Call retrofitGET = retrofitAPI.getSalesOrdersList(cookie, url);
@@ -409,7 +410,7 @@ public class RetrofitInstance {
 
     public static String getSalesOrdersQuantity(String cookie, int docEntry){
 
-        String url = "$crossjoin(Orders,Orders/DocumentLines)?$expand=Orders/DocumentLines($select=Quantity) &$filter=Orders/DocEntry eq Orders/DocumentLines/DocEntry and Orders/DocEntry  eq "+ docEntry +"";
+        String url = "$crossjoin(Orders,Orders/DocumentLineProperties)?$expand=Orders/DocumentLineProperties($select=Quantity) &$filter=Orders/DocEntry eq Orders/DocumentLineProperties/DocEntry and Orders/DocEntry  eq "+ docEntry +"";
 
         RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
 
@@ -486,5 +487,61 @@ public class RetrofitInstance {
         return false;
 
     }
+
+    public static boolean patchSerialNumberDetails(String cookie, int docEntry, SerialNumbersPatchObject serialNumbersPatchObject){
+
+        RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
+
+        Call retrofitGET = retrofitAPI.patchSerialNumberDetails(cookie, docEntry, serialNumbersPatchObject);
+
+        try {
+
+            response = retrofitGET.execute();
+
+            if(response.isSuccessful() && response.code() == 204)
+                return true;
+            else
+                return false;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.i("patchSerialNumber", "patchSerialNumberDetails Error: " + e.toString());
+        }
+
+        return false;
+
+    }
+
+    public static boolean goodsReceipt(String cookie, com.logistics.riftvalley.data.model.GoodReceipt.DocumentLines documentLines){
+
+        RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
+        Call retrofitPOST = retrofitAPI.goodsReceipt(cookie, documentLines);
+
+        try {
+
+            response = retrofitPOST.execute();
+
+            if(response.isSuccessful() && response.code() == 201){
+                return true;
+            }
+            else if(response.code() == 401){
+                if(response.isSuccessful() && response.code() == 200){
+                    Log.i("getWarehouses", "Warehouses: " + response.body());
+                    return true;
+                }
+
+                return false;
+            }
+            else
+                return false;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.i("getWarehouses", "Error: " + e.toString());
+            return false;
+        }
+
+    }
+
 
 }

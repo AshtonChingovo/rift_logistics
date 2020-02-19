@@ -15,7 +15,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.logistics.riftvalley.R;
 import com.toptoche.searchablespinnerlibrary.SearchableSpinner;
@@ -48,6 +50,9 @@ public class GradeReclassification extends AppCompatActivity implements _GradeRe
 
     SearchableSpinner lotNumbers;
 
+    String lotNumber;
+    String gradeString;
+
     IntentFilter mFilter;
     BroadcastReceiver mReceiver;
 
@@ -57,6 +62,10 @@ public class GradeReclassification extends AppCompatActivity implements _GradeRe
 
     String oldBarcode;
     String newBarcode;
+
+    int oldBarcodeSystemNumber;
+    int newBarcodeSystemNumber;
+    int binAbsEntryNumber;
 
     Map<String, String> lotNumbersMap;
     ArrayList lotNumbersList;
@@ -166,22 +175,27 @@ public class GradeReclassification extends AppCompatActivity implements _GradeRe
                 if(activeBarcode == 1){
 
                     oldBarcode = intent.getStringExtra(SCAN_BARCODE1);
+                    oldBarcodeProgressBar.setVisibility(View.VISIBLE);
 
-                    oldBarcodeImage.setVisibility(View.INVISIBLE);
-                    oldBarcodeString.setVisibility(View.VISIBLE);
-                    oldBarcodeString.setText(oldBarcode);
+                    // check if serial number exists in SAP
+                    transfersPresenter.requestSystemNumber(intent.getStringExtra(SCAN_BARCODE1), null, GRADE_RECLASSIFICATION);
 
                 }
                 else if(activeBarcode == 2){
 
                     newBarcode = intent.getStringExtra(SCAN_BARCODE1);
+                    newBarcodeProgressBar.setVisibility(View.VISIBLE);
 
+                    newBarcodeProgressBar.setVisibility(View.INVISIBLE);
                     newBarcodeImage.setVisibility(View.INVISIBLE);
                     lotNumbers.setVisibility(View.VISIBLE);
                     grade.setVisibility(View.VISIBLE);
                     newBarcodeString.setVisibility(View.VISIBLE);
                     newBarcodeString.setText(newBarcode);
 
+                    // check if it is okay to enable the processing button in the UI
+                    if(oldBarcode != null && newBarcode != null)
+                        processButton.setEnabled(true);
                 }
 
                 // unregisterReceiver(mReceiver);
@@ -192,11 +206,31 @@ public class GradeReclassification extends AppCompatActivity implements _GradeRe
         mFilter = new IntentFilter("nlscan.action.SCANNER_RESULT");
         this.registerReceiver(mReceiver, mFilter);
 
+        processButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                processButton.setVisibility(View.INVISIBLE);
+                processingProgressBar.setVisibility(View.VISIBLE);
+
+                // initiate reclassification process
+                transfersPresenter.reclassifyGrade(oldBarcode, oldBarcodeSystemNumber,
+                        newBarcode, newBarcodeSystemNumber,
+                        binAbsEntryNumber, gradeString, lotNumber);
+
+            }
+        });
+
     }
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
         grade.setText(lotNumbersMap.get(lotNumbersList.get(position)));
+
+        lotNumber = (String) lotNumbersList.get(position);
+        gradeString = lotNumbersMap.get(lotNumbersList.get(position));
+
     }
 
     @Override
@@ -217,4 +251,78 @@ public class GradeReclassification extends AppCompatActivity implements _GradeRe
         lotNumbers.setPositiveButton("Done");
 
     }
+
+    @Override
+    public void doesSerialNumberExistSAP(boolean doesSerialNumberExistSAP, int systemNumber, int binAbsEntry) {
+
+        Log.d("binAbsEntry", " :: view :: " + binAbsEntry);
+
+        binAbsEntryNumber = binAbsEntry;
+
+        if(doesSerialNumberExistSAP){
+            if(activeBarcode == 1){
+
+                oldBarcodeSystemNumber = systemNumber;
+
+                oldBarcodeProgressBar.setVisibility(View.INVISIBLE);
+                oldBarcodeImage.setVisibility(View.INVISIBLE);
+                oldBarcodeString.setVisibility(View.VISIBLE);
+                oldBarcodeString.setText(oldBarcode);
+                oldBarcodeString.setTextColor(getResources().getColor(R.color.white));
+            }
+            else if(activeBarcode == 2){
+
+                newBarcodeSystemNumber = systemNumber;
+
+                newBarcodeProgressBar.setVisibility(View.INVISIBLE);
+                newBarcodeImage.setVisibility(View.INVISIBLE);
+                lotNumbers.setVisibility(View.VISIBLE);
+                grade.setVisibility(View.VISIBLE);
+                newBarcodeString.setVisibility(View.VISIBLE);
+                newBarcodeString.setText(newBarcode);
+                newBarcodeString.setTextColor(getResources().getColor(R.color.white));
+            }
+
+            // check if it is okay to enable the processing button in the UI
+            if(oldBarcode != null && newBarcode != null)
+                processButton.setEnabled(true);
+
+        }
+        else{
+
+            Toast.makeText(this, "Sorry failed", Toast.LENGTH_SHORT).show();
+
+            if(activeBarcode == 1){
+                oldBarcodeProgressBar.setVisibility(View.INVISIBLE);
+                oldBarcodeImage.setVisibility(View.INVISIBLE);
+                oldBarcodeString.setVisibility(View.VISIBLE);
+                oldBarcodeString.setText(oldBarcode);
+                oldBarcodeString.setTextColor(getResources().getColor(R.color.red));
+            }
+            else if(activeBarcode == 2){
+                newBarcodeProgressBar.setVisibility(View.INVISIBLE);
+                newBarcodeImage.setVisibility(View.INVISIBLE);
+                lotNumbers.setVisibility(View.INVISIBLE);
+                grade.setVisibility(View.INVISIBLE);
+                newBarcodeString.setVisibility(View.VISIBLE);
+                newBarcodeString.setText(newBarcode);
+                newBarcodeString.setTextColor(getResources().getColor(R.color.red));
+            }
+        }
+    }
+
+    @Override
+    public void reclassifyResult(boolean isSuccessful) {
+
+        processingProgressBar.setVisibility(View.INVISIBLE);
+        processButton.setVisibility(View.VISIBLE);
+
+        if(isSuccessful){
+            Toast.makeText(this, "Grade transfer completed successfully", Toast.LENGTH_SHORT).show();
+        }
+        else{
+            Toast.makeText(this, "Grade transfer failed", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 }

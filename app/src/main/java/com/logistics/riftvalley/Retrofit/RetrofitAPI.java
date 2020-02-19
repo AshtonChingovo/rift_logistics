@@ -1,7 +1,8 @@
 package com.logistics.riftvalley.Retrofit;
 
+import com.logistics.riftvalley.data.model.Entity.SerialNumbersPatchObject;
+import com.logistics.riftvalley.data.model.GoodReceipt.DocumentLineProperties;
 import com.logistics.riftvalley.data.model.SalesOrder.DeliveryDocument;
-import com.logistics.riftvalley.data.model.StockDisposals.DocumentLines;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransfer;
 import com.logistics.riftvalley.data.model.Entity.ManufacturingSerialNumber;
 import com.logistics.riftvalley.data.model.Entity.Login;
@@ -59,8 +60,12 @@ public interface RetrofitAPI {
     Call<JsonObject> closeSalesOrder(@Header("Cookie") String cookie, @Path("docEntry") int docEntry);
 
     @POST("InventoryGenExits")
-    Call<JsonObject> stockDisposal(@Header("Cookie") String cookie, @Body DocumentLines documentLines);
+    Call<JsonObject> stockDisposal(@Header("Cookie") String cookie, @Body com.logistics.riftvalley.data.model.StockDisposals.DocumentLines documentLines);
 
+    @PATCH("SerialNumberDetails({docEntry})")
+    Call<JsonObject> patchSerialNumberDetails(@Header("Cookie") String cookie, @Path("docEntry") int docEntry, @Body SerialNumbersPatchObject serialNumbersPatchObject);
 
+    @POST("InventoryGenEntries")
+    Call<JsonObject> goodsReceipt(@Header("Cookie") String cookie, @Body com.logistics.riftvalley.data.model.GoodReceipt.DocumentLines documentLines);
 
 }

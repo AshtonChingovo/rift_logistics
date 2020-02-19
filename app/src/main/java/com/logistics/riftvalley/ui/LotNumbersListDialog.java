@@ -34,7 +34,7 @@ public class LotNumbersListDialog extends DialogFragment {
 
         View view = getActivity().getLayoutInflater().inflate(R.layout.stack_location_dialog, null);
 
-        stackLocationCode = view.findViewById(R.id.stackLocationCode);
+        // stackLocationCode = view.findViewById(R.id.stackLocationCode);
         stackLocation = view.findViewById(R.id.location);
         overflow = view.findViewById(R.id.overflow);
 
@@ -53,7 +53,7 @@ public class LotNumbersListDialog extends DialogFragment {
                 break;
         }
 
-        stackLocationCode.setText(aisleCode);
+        // stackLocationCode.setText(aisleCode);
 
         AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
         dialog.setView(view)

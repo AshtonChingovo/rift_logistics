@@ -148,7 +148,7 @@ public class SalesOrdersList extends AppCompatActivity implements _SalesView{
                     for(int i = 0; i < jsonArray.length(); i++){
 
                         JSONObject ordersObject = jsonArray.getJSONObject(i).getJSONObject("Orders");
-                        JSONObject ordersDocumentLinesObject = jsonArray.getJSONObject(i).getJSONObject("Orders/DocumentLines");
+                        JSONObject ordersDocumentLinesObject = jsonArray.getJSONObject(i).getJSONObject("Orders/DocumentLineProperties");
 
                         salesOrderLists.add(new SalesOrderList(ordersObject.getString("CardCode"),
                                 ordersObject.getString("CardName"),

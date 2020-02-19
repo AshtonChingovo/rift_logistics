@@ -2,22 +2,18 @@ package com.logistics.riftvalley.data.model;
 
 import android.os.AsyncTask;
 import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
-
 import com.logistics.riftvalley.Retrofit.RetrofitInstance;
 import com.logistics.riftvalley.Utilities.SharedPreferences.SharedPreferencesClass;
 import com.logistics.riftvalley.data.DataManager;
 import com.logistics.riftvalley.data._DataManager;
 import com.logistics.riftvalley.data.model.Entity.Login;
+import com.logistics.riftvalley.data.model.Entity.SerialNumbersPatchObject;
 import com.logistics.riftvalley.data.model.Entity.Warehouses;
+import com.logistics.riftvalley.data.model.GoodReceipt.DocumentLineProperties;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransfer;
 import com.logistics.riftvalley.data.model.SalesOrder.DeliveryDocument;
-import com.logistics.riftvalley.data.model.SalesOrder.SalesOrderDocumentLinesSerialNumbers;
 import com.logistics.riftvalley.data.model.SalesOrder.SalesOrdersDocumentLines;
 import com.logistics.riftvalley.data.model.StockDisposals.DocumentLines;
-import com.logistics.riftvalley.data.model.StockDisposals.StockDisposalsEntity;
-import com.logistics.riftvalley.ui.StockMovements.Sale.Dispatch;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -36,11 +32,14 @@ public class API_Helper implements _API_Helper {
     // warehouses list
     List<Warehouses> warehouses = new ArrayList<>();
 
-    // StockDisposalsEntity List
-    List<StockDisposalsEntity> DocumentLines = new ArrayList<>();
-
     // binLocationAbsEntryNumber is set to zero for endpoints that do not require it
     int binLocationAbsEntryNumber = 0;
+
+    // the identity of the activity that requested data
+    int source;
+
+    com.logistics.riftvalley.data.model.StockDisposals.DocumentLines documentLinesStockDisposal;
+    com.logistics.riftvalley.data.model.GoodReceipt.DocumentLines documentLinesLinesGoodsReceipt;
 
     public API_Helper(DataManager dataManager) {
         this.dataManager = dataManager;
@@ -70,7 +69,11 @@ public class API_Helper implements _API_Helper {
 
     @Override
     public void requestSerialNumberSystemNumber(String serialNumber, String warehouseCode, int source) {
-        if(source == SCAN_NEW_INVENTORY || source == IN_WAREHOUSE_ACTIVITY || source == MOVE_TO_DISPATCH_ACTIVITY || source == CHECK_IN || source == MOVE_TO_FUMIGATION_SALES || source == MOVE_TO_DISPATCH_SALES)
+
+        this.source = source;
+
+        if(source == SCAN_NEW_INVENTORY || source == IN_WAREHOUSE_ACTIVITY || source == MOVE_TO_DISPATCH_ACTIVITY || source == CHECK_IN
+                || source == MOVE_TO_FUMIGATION_SALES || source == MOVE_TO_DISPATCH_SALES || source == GRADE_RECLASSIFICATION)
             new RequestSystemNumberAndBinLocationAbsEntry().execute(serialNumber);
         else
             new RequestSystemNumber().execute(serialNumber);
@@ -158,6 +161,21 @@ public class API_Helper implements _API_Helper {
 
     @Override
     public void returnLotNumbers(String lotNumberJson) {
+
+    }
+
+    @Override
+    public void reclassifyGrade(com.logistics.riftvalley.data.model.StockDisposals.DocumentLines documentLines,
+                                com.logistics.riftvalley.data.model.GoodReceipt.DocumentLines documentLinesLinesGoodsReceipt) {
+        this.documentLinesStockDisposal = documentLines;
+        this.documentLinesLinesGoodsReceipt = documentLinesLinesGoodsReceipt;
+
+        new GradeReclassification().execute();
+
+    }
+
+    @Override
+    public void reclassifyResult(boolean isSuccessful) {
 
     }
 
@@ -251,6 +269,8 @@ public class API_Helper implements _API_Helper {
 
         String downloadedSystemNumber;
 
+        int systemNumber = 0;
+
         @Override
         protected Void doInBackground(String... values) {
 
@@ -267,8 +287,18 @@ public class API_Helper implements _API_Helper {
                     // Extract scanned carton's system number
                     downloadedSystemNumber = jsonArray.getJSONObject(0).get("SystemNumber").toString();
 
+                    // set the static ItemCode to the one retrieved from the end point
+                    ITEM_CODE = jsonArray.getJSONObject(0).get("ItemCode").toString();
+
+                    // set the serial number id
+                    SERIAL_NUMBER_ID = jsonArray.getJSONObject(0).getInt("DocEntry");
+
+                    systemNumber = Integer.parseInt(downloadedSystemNumber);
+
+
                 } catch (JSONException e) {
                     e.printStackTrace();
+                    systemNumber = 0;
                     Log.i("ScanningProcess", "ScanNewInventory Error: " + e.toString());
                     return null;
                 }
@@ -282,14 +312,7 @@ public class API_Helper implements _API_Helper {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            if(Integer.parseInt(downloadedSystemNumber) != 0){
-                // Callback to DataManager
-                dataManager.returnSerialNumberSAPSystemNumberWithBinLocationAbsEntry(Integer.parseInt(downloadedSystemNumber), binLocationAbsEntryNumber);
-            }
-            else {
-                // return zero to show something went wrong
-                dataManager.returnSerialNumberSAPSystemNumberWithBinLocationAbsEntry(0, binLocationAbsEntryNumber);
-            }
+            dataManager.returnSerialNumberSAPSystemNumberWithBinLocationAbsEntry(systemNumber, binLocationAbsEntryNumber);
         }
     }
 
@@ -320,9 +343,19 @@ public class API_Helper implements _API_Helper {
                     // Extract scanned carton's system number
                     downloadedSystemNumber = jsonArray.getJSONObject(0).get("SystemNumber").toString();
 
+                    // set the static ItemCode to the one retrieved from the end point
+                    ITEM_CODE = jsonArray.getJSONObject(0).get("ItemCode").toString();
+
+                    // set the serial number id
+                    SERIAL_NUMBER_ID = jsonArray.getJSONObject(0).getInt("DocEntry");
+
                     if(jsonArray.length() != 0){
 
                         Log.d("BinLocationAbsEntry", " location " + SharedPreferencesClass.getStackLocation());
+
+                        // if request is coming from Grade Reclassifications set the stack location to the Location field in the returned JSON
+                        if(source == GRADE_RECLASSIFICATION)
+                            SharedPreferencesClass.writeStackLocation(jsonArray.getJSONObject(0).getString("Details"));
 
                         // Get scanned carton's data with BinLocationAbsEntry
                         downloadedBinLocationAbsEntry = RetrofitInstance.getBinLocationAbsEntryNumber(SharedPreferencesClass.getCookie(), SharedPreferencesClass.getStackLocation());
@@ -371,13 +404,25 @@ public class API_Helper implements _API_Helper {
     public class PerformTransfer extends AsyncTask<StockTransfer, Void, Void> {
 
         boolean stockTransferResponse = false;
+        boolean patchSerialNumberDetails = false;
 
         @Override
         protected Void doInBackground(StockTransfer... stockTransferObject) {
 
+            // transfer stock
             stockTransferResponse = RetrofitInstance.stockTransfer(SharedPreferencesClass.getCookie(), stockTransferObject[0]);
 
-            Log.d("PerformTransfer", " response -- " + stockTransferResponse);
+            // patch the serial # details
+            patchSerialNumberDetails = RetrofitInstance.patchSerialNumberDetails(
+                    SharedPreferencesClass.getCookie(),
+                    SERIAL_NUMBER_ID,
+                    new SerialNumbersPatchObject(
+                            SharedPreferencesClass.getWarehouseCode(),
+                            SharedPreferencesClass.getStackLocation()
+                    )
+            );
+
+            Log.d("PerformTransfer", " response -- " + patchSerialNumberDetails);
 
             return null;
 
@@ -387,7 +432,7 @@ public class API_Helper implements _API_Helper {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             // Callback to DataManager
-            dataManager.serialNumberTransferResponse(stockTransferResponse);
+            dataManager.serialNumberTransferResponse(patchSerialNumberDetails);
         }
     }
 
@@ -541,5 +586,82 @@ public class API_Helper implements _API_Helper {
             dataManager.returnLotNumbers(lotNumbers);
         }
     }
+
+    public class GradeReclassification extends AsyncTask<Void, Void, Void> {
+
+        JSONObject jsonObject;
+        JSONArray jsonArray;
+
+        boolean stockDisposed = false;
+        boolean goodReceipt = false;
+        boolean patch = false;
+
+        String downloadedSystemNumber;
+
+        SerialNumbersPatchObject serialNumbersPatchObject;
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            stockDisposed = RetrofitInstance.stockDisposal(SharedPreferencesClass.getCookie(), documentLinesStockDisposal);
+
+            if(stockDisposed){
+                goodReceipt = RetrofitInstance.goodsReceipt(SharedPreferencesClass.getCookie(), documentLinesLinesGoodsReceipt);
+
+                // patch in details for the newly created serial number
+                // add lotNumber
+                if(goodReceipt){
+
+                    downloadedSystemNumber = RetrofitInstance.getCartonSystemNumber(SharedPreferencesClass.getCookie(),
+                            documentLinesLinesGoodsReceipt.getDocumentLines().get(0).getSerialNum());
+
+                    if(downloadedSystemNumber != null){
+
+                        try {
+
+                            jsonObject = new JSONObject(downloadedSystemNumber);
+                            jsonArray = jsonObject.getJSONArray("value");
+
+                            // Extract scanned carton's system number
+                            downloadedSystemNumber = jsonArray.getJSONObject(0).get("SystemNumber").toString();
+
+                            // set the serial number id
+                            SERIAL_NUMBER_ID = jsonArray.getJSONObject(0).getInt("DocEntry");
+
+                            serialNumbersPatchObject = new SerialNumbersPatchObject(
+                                    SharedPreferencesClass.getWarehouseCode(),
+                                    null
+                            );
+
+                            serialNumbersPatchObject.setLotNumber(documentLinesLinesGoodsReceipt.getDocumentLines().get(0).getLotNumber());
+
+                            // patch lotNumber of the new serial number
+                            patch = RetrofitInstance.patchSerialNumberDetails(
+                                    SharedPreferencesClass.getCookie(),
+                                    SERIAL_NUMBER_ID, serialNumbersPatchObject);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            patch = false;
+                            return null;
+                        }
+
+                    }
+
+                }
+                return null;
+            }
+            else
+                return null;
+
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            dataManager.reclassifyResult(patch);
+        }
+    }
+
 
 }

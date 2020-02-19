@@ -2,9 +2,9 @@ package com.logistics.riftvalley.data.model;
 
 import com.logistics.riftvalley.data.model.Entity.Login;
 import com.logistics.riftvalley.data.model.Entity.Warehouses;
+import com.logistics.riftvalley.data.model.GoodReceipt.DocumentLineProperties;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransfer;
 import com.logistics.riftvalley.data.model.SalesOrder.SalesOrdersDocumentLines;
-import com.logistics.riftvalley.data.model.StockDisposals.DocumentLines;
 
 import org.json.JSONArray;
 
@@ -35,7 +35,7 @@ public interface _API_Helper {
     // transfer stock to new warehouse
     void transferSerialNumber();
 
-    void stockDisposal(DocumentLines documentLines);
+    void stockDisposal(com.logistics.riftvalley.data.model.StockDisposals.DocumentLines documentLines);
 
     void stockDisposalResponse(boolean isSuccessful);
 
@@ -62,12 +62,15 @@ public interface _API_Helper {
 
     void dispatchGoodsResponse(boolean isSuccessful, String message);
 
-
     /*
     *  grade reclassification
     * */
     void getLotNumbers();
 
     void returnLotNumbers(String lotNumberJson);
+
+    void reclassifyGrade(com.logistics.riftvalley.data.model.StockDisposals.DocumentLines documentLines, com.logistics.riftvalley.data.model.GoodReceipt.DocumentLines documentLinesGoodsReceipt);
+
+    void reclassifyResult(boolean isSuccessful);
 
 }

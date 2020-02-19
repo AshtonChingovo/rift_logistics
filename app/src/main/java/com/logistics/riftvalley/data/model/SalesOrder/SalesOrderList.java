@@ -40,7 +40,6 @@ public class SalesOrderList {
         this.quantity = quantity;
     }
 
-
     public String getItemCode() {
         return itemCode;
     }

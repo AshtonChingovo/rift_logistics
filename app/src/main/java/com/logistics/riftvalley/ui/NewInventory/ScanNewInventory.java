@@ -86,6 +86,14 @@ public class ScanNewInventory extends AppCompatActivity implements _NewInventory
         // set the stack location to the warehouse Receiving area
         SharedPreferencesClass.writeStackLocation((SharedPreferencesClass.getWarehouseCode() + "-" + RECEIVING_AREA).trim().toUpperCase());
 
+        stackLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DialogFragment dialog = new StackLocationDialog();
+                dialog.show(getSupportFragmentManager(), "Dialog");
+            }
+        });
+
         if(warehouseName != null)
             toolbar.setTitle(warehouseName + " - Cartons");
 
@@ -115,7 +123,6 @@ public class ScanNewInventory extends AppCompatActivity implements _NewInventory
                 }catch (Exception e){
                     Toast.makeText(ScanNewInventory.this, "Operation failed", Toast.LENGTH_SHORT).show();
                 }
-
             }
         };
 

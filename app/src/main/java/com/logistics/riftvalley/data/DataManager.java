@@ -8,6 +8,7 @@ import com.logistics.riftvalley.data.model.Entity.Login;
 import com.logistics.riftvalley.data.model.Entity.SerialNumbers;
 import com.logistics.riftvalley.data.model.Entity.StaticVariables;
 import com.logistics.riftvalley.data.model.Entity.Warehouses;
+import com.logistics.riftvalley.data.model.GoodReceipt.DocumentLineProperties;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransfer;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransferLines;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransferLinesBinAllocations;
@@ -32,6 +33,7 @@ import java.util.List;
 
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.CHECK_IN;
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.CHECK_OUT;
+import static com.logistics.riftvalley.Utilities.PublicStaticVariables.GRADE_RECLASSIFICATION;
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.MOVE_TO_DISPATCH_ACTIVITY;
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.MOVE_TO_DISPATCH_SALES;
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.MOVE_TO_FUMIGATION_SALES;
@@ -150,6 +152,7 @@ public class DataManager implements _DataManager{
 
     }
 
+    // TODO check line with the following code :: serialNumberTransferActivityRequestSource == MOVE_TO_DISPATCH_ACTIVITY
     @Override
     public void returnSerialNumberSAPSystemNumberWithBinLocationAbsEntry(int systemNumber, int downloadedBinLocationAbsEntry) {
         // IF serialNumber > 0 (zero) means all's good ELSE something is wrong
@@ -170,6 +173,8 @@ public class DataManager implements _DataManager{
                 api_helper.stockDisposal(generateDocumentLinesObject(systemNumber));
             else if(serialNumberTransferActivityRequestSource == MOVE_TO_FUMIGATION_SALES || serialNumberTransferActivityRequestSource == MOVE_TO_DISPATCH_SALES)
                 api_helper.transferSerialNumberSAP(generateStockTransfersJson_Sales(systemNumber, downloadedBinLocationAbsEntry));
+            else if(serialNumberTransferActivityRequestSource == GRADE_RECLASSIFICATION)
+                transfersPresenter.doesSerialNumberExist(true, systemNumber, downloadedBinLocationAbsEntry);
         }
         else{
             if(serialNumberTransferActivityRequestSource == SCAN_NEW_INVENTORY)
@@ -183,6 +188,8 @@ public class DataManager implements _DataManager{
                 stockDisposalsPresenter.success(false);
             else if(serialNumberTransferActivityRequestSource == MOVE_TO_DISPATCH_ACTIVITY || serialNumberTransferActivityRequestSource == MOVE_TO_DISPATCH_SALES)
                 salesPresenter.success(false);
+            else if(serialNumberTransferActivityRequestSource == GRADE_RECLASSIFICATION)
+                transfersPresenter.doesSerialNumberExist(false, systemNumber, downloadedBinLocationAbsEntry);
         }
     }
 
@@ -239,7 +246,7 @@ public class DataManager implements _DataManager{
                 for(int i = 0; i < jsonArray.length(); i++){
 
                     JSONObject ordersObject = jsonArray.getJSONObject(i).getJSONObject("Orders");
-                    JSONObject ordersDocumentLinesObject = jsonArray.getJSONObject(i).getJSONObject("Orders/DocumentLines");
+                    JSONObject ordersDocumentLinesObject = jsonArray.getJSONObject(i).getJSONObject("Orders/DocumentLineProperties");
 
                     salesOrderLists.add(new SalesOrderList(ordersObject.getString("CardCode"),
                             ordersObject.getString("CardName"),
@@ -304,6 +311,17 @@ public class DataManager implements _DataManager{
     @Override
     public void returnLotNumbers(String lotNumberJson) {
         transfersPresenter.lotNumbers(lotNumberJson);
+    }
+
+    @Override
+    public void reclassifyGrade(com.logistics.riftvalley.data.model.StockDisposals.DocumentLines documentLinesStockDisposal,
+                                com.logistics.riftvalley.data.model.GoodReceipt.DocumentLines documentLinesLinesGoodsReceipt) {
+        api_helper.reclassifyGrade(documentLinesStockDisposal, documentLinesLinesGoodsReceipt);
+    }
+
+    @Override
+    public void reclassifyResult(boolean isSuccessful) {
+        transfersPresenter.reclassifyResult(isSuccessful);
     }
 
     public StockTransfer generateStockTransfersJson(int systemNumber, int binAbsEntry){
@@ -508,7 +526,7 @@ public class DataManager implements _DataManager{
 
     }
 
-    public DocumentLines generateDocumentLinesObject(int systemNumber){
+    public com.logistics.riftvalley.data.model.StockDisposals.DocumentLines generateDocumentLinesObject(int systemNumber){
 
         List<SerialNumbers> SerialNumbers = new ArrayList<>();
         List<StockDisposalsEntity> DocumentLines = new ArrayList<>();
