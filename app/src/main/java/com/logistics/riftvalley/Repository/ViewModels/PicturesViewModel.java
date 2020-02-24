@@ -6,7 +6,7 @@ import android.arch.lifecycle.LiveData;
 import android.support.annotation.NonNull;
 
 import com.logistics.riftvalley.data.model.DB.AppDatabase;
-import com.logistics.riftvalley.data.model.Entity.DispatchPictures;
+import com.logistics.riftvalley.data.model.Entity.PicturesDB;
 
 import java.util.List;
 
@@ -16,25 +16,25 @@ public class PicturesViewModel extends AndroidViewModel {
     public static Integer agentId;
     String growerType;
     private Application application;
-    private LiveData<List<DispatchPictures>> dispatchPicture;
-    private LiveData<List<DispatchPictures>> allDispatchPicture;
+    private LiveData<List<PicturesDB>> dispatchPicture;
+    private LiveData<List<PicturesDB>> allDispatchPicture;
 
     public PicturesViewModel(@NonNull Application application) {
         super(application);
         this.application = application;
     }
 
-    public LiveData<List<DispatchPictures>> getDispatchPicturesLiveData(String customerName) {
+    public LiveData<List<PicturesDB>> getDispatchPicturesLiveData(String customerName) {
 
-        dispatchPicture = AppDatabase.getDatabase(application).dispatchPicturesDao().getDispatchPicturesLive(customerName);
+        // dispatchPicture = AppDatabase.getDatabase(application).picturesDao().getDispatchPicturesLive(customerName);
 
         return dispatchPicture;
 
     }
 
-    public LiveData<List<DispatchPictures>> getAllDispatchPicturesLiveData() {
+    public LiveData<List<PicturesDB>> getAllDispatchPicturesLiveData() {
 
-        allDispatchPicture = AppDatabase.getDatabase(application).dispatchPicturesDao().getAllDispatchPicturesLive();
+        // allDispatchPicture = AppDatabase.getDatabase(application).picturesDao().getAllDispatchPicturesLive();
 
         return dispatchPicture;
 

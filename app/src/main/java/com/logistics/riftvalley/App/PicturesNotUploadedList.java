@@ -18,8 +18,8 @@ import android.widget.TextView;
 
 import com.logistics.riftvalley.R;
 import com.logistics.riftvalley.data.model.DB.AppDatabase;
-import com.logistics.riftvalley.data.model.Dao.DispatchPicturesDao;
-import com.logistics.riftvalley.data.model.Entity.DispatchPictures;
+import com.logistics.riftvalley.data.model.Dao.PicturesDao;
+import com.logistics.riftvalley.data.model.Entity.PicturesDB;
 import com.logistics.riftvalley.Repository.ViewModels.PicturesViewModel;
 import com.logistics.riftvalley.Utilities.SharedPreferences.SharedPreferencesClass;
 
@@ -30,7 +30,7 @@ public class PicturesNotUploadedList extends AppCompatActivity {
 
     private PicturesViewModel picturesViewModel;
     RecyclerView recyclerView;
-    List<DispatchPictures> dispatchPictures = new ArrayList<>();
+    List<PicturesDB> pictures = new ArrayList<>();
     FloatingActionButton floatingActionButton;
 
     @SuppressLint("RestrictedApi")
@@ -49,9 +49,9 @@ public class PicturesNotUploadedList extends AppCompatActivity {
         /*
          *   Observers
          * */
-        final Observer<List<DispatchPictures>> picturesObserver = new Observer<List<DispatchPictures>>() {
+        final Observer<List<PicturesDB>> picturesObserver = new Observer<List<PicturesDB>>() {
             @Override
-            public void onChanged(@Nullable List<DispatchPictures> dispatchPictures) {
+            public void onChanged(@Nullable List<PicturesDB> dispatchPictures) {
                 new GetPictures().execute();
             }
         } ;
@@ -81,7 +81,7 @@ public class PicturesNotUploadedList extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return dispatchPictures.size();
+            return pictures.size();
         }
     }
 
@@ -103,8 +103,7 @@ public class PicturesNotUploadedList extends AppCompatActivity {
 
         public void bind(int position) {
 
-            customerName.setText(dispatchPictures.get(position).getSalesOrderCustomer());
-            date.setText(dispatchPictures.get(position).getDate());
+            date.setText(pictures.get(position).getDate());
             status.setText("Not Uploaded");
 
         }
@@ -116,9 +115,9 @@ public class PicturesNotUploadedList extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids) {
 
-            DispatchPicturesDao dispatchPicturesDao = AppDatabase.getDatabase(getApplicationContext()).dispatchPicturesDao();
+            PicturesDao picturesDao = AppDatabase.getDatabase(getApplicationContext()).picturesDao();
 
-            dispatchPictures = dispatchPicturesDao.getAllDispatchPictures();
+            // pictures = picturesDao.getAllDispatchPictures();
 
             return null;
         }

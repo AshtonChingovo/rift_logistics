@@ -49,6 +49,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/bin" />
-
     </android.support.constraint.ConstraintLayout>
+
 </android.support.constraint.ConstraintLayout>

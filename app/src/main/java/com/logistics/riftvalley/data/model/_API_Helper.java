@@ -1,9 +1,12 @@
 package com.logistics.riftvalley.data.model;
 
+import android.content.Context;
+
 import com.logistics.riftvalley.data.model.Entity.Login;
+import com.logistics.riftvalley.data.model.Entity.PicturesDB;
 import com.logistics.riftvalley.data.model.Entity.Warehouses;
-import com.logistics.riftvalley.data.model.GoodReceipt.DocumentLineProperties;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransfer;
+import com.logistics.riftvalley.data.model.SalesOrder.DeliveryNote;
 import com.logistics.riftvalley.data.model.SalesOrder.SalesOrdersDocumentLines;
 
 import org.json.JSONArray;
@@ -45,7 +48,11 @@ public interface _API_Helper {
     * */
     void requestSalesOrderList();
 
+    void requestDeliveryNotesList(Context context);
+
     void salesOrderListResponse(String salesOrdersJsonString);
+
+    void deliveryNotesResponse(List<DeliveryNote> deliveryNotesList);
 
     void doesSerialNumberExistInSAP(String serialNumber);
 
@@ -72,5 +79,20 @@ public interface _API_Helper {
     void reclassifyGrade(com.logistics.riftvalley.data.model.StockDisposals.DocumentLines documentLines, com.logistics.riftvalley.data.model.GoodReceipt.DocumentLines documentLinesGoodsReceipt);
 
     void reclassifyResult(boolean isSuccessful);
+
+    /*
+    *   PicturesView
+    * */
+    void getPictures(Context context);
+
+    void picturesList(List<PicturesDB> pictures);
+
+    void picturesUpdate(Context context, List<PicturesDB> pictures);
+
+    void picturesSave(Context context, List<PicturesDB> pictures);
+
+    void isPicturesOperationSuccessful(boolean isSuccessful, int operationId);
+
+    void deleteImage(PicturesDB picture);
 
 }

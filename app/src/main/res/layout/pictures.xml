@@ -31,7 +31,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:title="Pictures"
+        app:title="PicturesDB"
         app:titleTextColor="@color/whiteOpacity" />
 
     <android.support.v7.widget.RecyclerView
@@ -59,4 +59,16 @@
         app:layout_constraintHorizontal_bias="0.47"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/toolbar" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/upload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:clickable="true"
+        app:fabSize="mini"
+        app:layout_constraintBottom_toTopOf="@+id/snap"
+        app:layout_constraintEnd_toEndOf="@+id/snap"
+        app:layout_constraintStart_toStartOf="@+id/snap"
+        app:srcCompat="@drawable/upload" />
 </android.support.constraint.ConstraintLayout>

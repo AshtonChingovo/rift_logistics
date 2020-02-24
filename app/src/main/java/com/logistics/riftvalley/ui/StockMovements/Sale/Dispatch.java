@@ -26,6 +26,7 @@ import android.widget.Toast;
 
 import com.logistics.riftvalley.R;
 import com.logistics.riftvalley.data.model.SalesOrder.DeliveryDocument;
+import com.logistics.riftvalley.data.model.SalesOrder.DeliveryNote;
 import com.logistics.riftvalley.data.model.SalesOrder.SalesOrderDocumentLinesSerialNumbers;
 import com.logistics.riftvalley.data.model.SalesOrder.SalesOrderList;
 import com.logistics.riftvalley.data.model.SalesOrder.SalesOrdersDocumentLines;
@@ -179,6 +180,11 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
 
     @Override
     public void salesOrdersList(List<SalesOrderList> salesOrderLists) {
+
+    }
+
+    @Override
+    public void deliveryNotesList(List<DeliveryNote> deliveryNoteList) {
 
     }
 

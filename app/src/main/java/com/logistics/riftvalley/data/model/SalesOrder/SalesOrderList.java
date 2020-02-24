@@ -55,4 +55,6 @@ public class SalesOrderList {
     public void setDocEntry(int docEntry) {
         this.docEntry = docEntry;
     }
+
+
 }

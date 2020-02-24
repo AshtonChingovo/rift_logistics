@@ -1,4 +1,4 @@
-package com.logistics.riftvalley.ui.StockMovements.Sale.Pictures;
+package com.logistics.riftvalley.ui.StockMovements.Sale.PicturesPackage;
 
 import android.Manifest;
 import android.content.Intent;
@@ -32,14 +32,25 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.work.Constraints;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.logistics.riftvalley.R;
+import com.logistics.riftvalley.Utilities.SharedPreferences.SharedPreferencesClass;
+import com.logistics.riftvalley.Utilities.UploadPictures.Uploads;
 import com.logistics.riftvalley.data.model.DB.AppDatabase;
-import com.logistics.riftvalley.data.model.Dao.DispatchPicturesDao;
-import com.logistics.riftvalley.data.model.Entity.DispatchPictures;
+import com.logistics.riftvalley.data.model.Dao.PicturesDao;
 import com.logistics.riftvalley.Utilities.ExitDialog;
 import com.logistics.riftvalley.Utilities.UploadPictures.InternetBroadcastReceiver;
+import com.logistics.riftvalley.data.model.Entity.PicturesDB;
+import com.logistics.riftvalley.ui.StockMovements.Sale.SalesPresenter;
+import com.logistics.riftvalley.ui.StockMovements.Sale._PicturesView;
+import com.logistics.riftvalley.ui.StockMovements.Sale._SalesPresenter;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -47,22 +58,28 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class Pictures extends AppCompatActivity implements ExitDialog.ExitSave {
+public class PicturesView extends AppCompatActivity implements ExitDialog.ExitSave, _PicturesView {
 
     Uri photoURI;
     File photoFile;
-
     TextView label;
 
     FloatingActionButton snap;
     RecyclerView recyclerView;
     ImageView img;
+
     Toolbar toolbar;
 
+    long unixDate;
+    String date;
+
     /** List that stores all pics **/
-    public static List<DispatchPictures> imagesList = new ArrayList<>();
+    public static List<PicturesDB> imagesList = new ArrayList<>();
 
     final int CAMERA_PERMISSIONS_REQUEST = 1;
+
+    // Reference to Presenter
+    _SalesPresenter salesPresenter = new SalesPresenter();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +99,7 @@ public class Pictures extends AppCompatActivity implements ExitDialog.ExitSave {
             @Override
             public void onClick(View view) {
                 if(imagesList.size() == 10)
-                    Toast.makeText(Pictures.this, "Maximum number of pictures allowed reached", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(PicturesView.this, "Maximum number of pictures allowed reached", Toast.LENGTH_SHORT).show();
                 else
                     StartCamera();
             }
@@ -94,22 +111,42 @@ public class Pictures extends AppCompatActivity implements ExitDialog.ExitSave {
         actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setHomeAsUpIndicator(R.drawable.back);
 
+        // initialize view in Presenter
+        salesPresenter.initializeView(this);
+
+        salesPresenter.getPictures(this);
+
     }
 
     //@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         //Pic taken successfully & added to List
-
         Log.i("URI--IMAGE", "" + photoURI);
 
         if (requestCode == 1 && resultCode == RESULT_OK) {
             addPicToGallery(photoFile);
-            Intent intent = new Intent(this, Caption.class);
-            intent.putExtra("photoURI", photoFile.getAbsolutePath());
-            startActivityForResult(intent, 2);
 
-            Log.i("URI--IMAGE", "" + photoURI);
+            if(PicturesView.imagesList.size() < 10){
+                date = new SimpleDateFormat("dd MMMM yyyy").format(new Date());
+
+                // unixDate initially set to 0 and will be added from a report's unixDate
+                unixDate = 0;
+
+                imagesList.add(new PicturesDB(
+                        SharedPreferencesClass.getDocEntryNumber(),
+                        photoFile.getAbsolutePath(),
+                        date,
+                        0, 0));
+
+                // refresh recycler view
+                recyclerView.getAdapter().notifyDataSetChanged();
+
+                StartCamera();
+
+            }
+            else
+                Toast.makeText(this, "Maximum number of pictures allowed reached", Toast.LENGTH_SHORT).show();
 
         }
 
@@ -129,7 +166,7 @@ public class Pictures extends AppCompatActivity implements ExitDialog.ExitSave {
 
             if (photoFile != null) {
                 Log.d("StartCamera", "photoFile not Empty");
-                photoURI = FileProvider.getUriForFile(this, "com.example.achingovo.inventory.android.fileprovider", photoFile);
+                photoURI = FileProvider.getUriForFile(this, "com.logistics.riftvalley.inventory.android.fileprovider", photoFile);
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(intent, 1);
             }
@@ -156,7 +193,7 @@ public class Pictures extends AppCompatActivity implements ExitDialog.ExitSave {
                 imageName + ".jpg"
         );
 
-        Log.i("Exists", image.getPath());
+        Log.i("Exists", " size :: " + image.length());
 
         return image;
     }
@@ -165,10 +202,15 @@ public class Pictures extends AppCompatActivity implements ExitDialog.ExitSave {
     protected void onResume() {
         super.onResume();
 
+        if(recyclerView.getAdapter() != null)
+            recyclerView.getAdapter().notifyDataSetChanged();
+
         if(imagesList.size() > 0)
             label.setVisibility(View.GONE);
-        else
+        else{
             label.setVisibility(View.VISIBLE);
+            return;
+        }
 
         recyclerView.setAdapter(new RecyclerViewAdapter());
         recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
@@ -177,15 +219,10 @@ public class Pictures extends AppCompatActivity implements ExitDialog.ExitSave {
 
     @Override
     public void onBackPressed() {
-        //super.onBackPressed();
-
-        if(imagesList.size() > 0){
-            DialogFragment dialog = new ExitDialog();
-            dialog.show(getSupportFragmentManager(), "Dialog");
-        }
+        if(imagesList.size() > 0)
+            salesPresenter.updatePictures(this, imagesList);
         else
             finish();
-
     }
 
     @Override
@@ -200,15 +237,22 @@ public class Pictures extends AppCompatActivity implements ExitDialog.ExitSave {
 
         switch (item.getItemId()){
             case android.R.id.home:
-                if(imagesList.size() > 0){
-                    DialogFragment dialog = new ExitDialog();
-                    dialog.show(getSupportFragmentManager(), "Dialog");
-                }
+                if(imagesList.size() > 0)
+                    salesPresenter.updatePictures(this, imagesList);
                 else
                     finish();
-                return true;
+                break;
             case R.id.save:
-                new AddToDB().execute(imagesList);
+                if(imagesList.size() > 0) {
+                    salesPresenter.savePictures(this, imagesList);
+                    item.setVisible(false);
+
+                    // InternetBroadcastReceiver.StartReportUploading(this);
+
+                }
+                else{
+                    Toast.makeText(this, "No pictures found to save", Toast.LENGTH_SHORT).show();
+                }
                 break;
         }
         return true;
@@ -222,6 +266,44 @@ public class Pictures extends AppCompatActivity implements ExitDialog.ExitSave {
     @Override
     public void exitNoSave() {
         finish();
+    }
+
+    @Override
+    public void picturesList(List<PicturesDB> picturesList) {
+        imagesList = picturesList;
+
+        if(imagesList.size() > 0)
+            label.setVisibility(View.GONE);
+        else
+            label.setVisibility(View.VISIBLE);
+
+        recyclerView.setAdapter(new RecyclerViewAdapter());
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+
+    }
+
+    @Override
+    public void isSavePicturesOperationSuccessful(boolean isSuccessful) {
+        if(isSuccessful){
+            Toast.makeText(this, "Pictures saved", Toast.LENGTH_SHORT).show();
+            // clear list
+            imagesList.clear();
+            finish();
+        }
+        else
+            Toast.makeText(this, "Sorry operation failed", Toast.LENGTH_SHORT).show();
+
+    }
+
+    @Override
+    public void isUpdatePicturesOperationSuccessful(boolean isSuccessful) {
+        if(isSuccessful){
+            Toast.makeText(this, "Pictures saved to drafts", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+        else
+            Toast.makeText(this, "Sorry operation failed", Toast.LENGTH_SHORT).show();
+
     }
 
     /** Recycler View code **/
@@ -255,7 +337,7 @@ public class Pictures extends AppCompatActivity implements ExitDialog.ExitSave {
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Intent intent = new Intent(Pictures.this, ViewPicture.class);
+                    Intent intent = new Intent(PicturesView.this, ViewPicture.class);
                     intent.putExtra("index", getAdapterPosition());
                     startActivity(intent);
                 }
@@ -283,42 +365,6 @@ public class Pictures extends AppCompatActivity implements ExitDialog.ExitSave {
         mediaScanIntent.setData(contentUri);
         this.sendBroadcast(mediaScanIntent);
 
-    }
-
-    public class AddToDB extends AsyncTask<List<DispatchPictures>, Void, Void> {
-        long[] val;
-
-        @Override
-        protected Void doInBackground(List<DispatchPictures>... reportPictures) {
-
-            DispatchPicturesDao dispatchPicturesDao = AppDatabase.getDatabase(getApplicationContext()).dispatchPicturesDao();
-
-            if(Pictures.imagesList.size() <= 0)
-                finish();
-            else{
-
-                val = dispatchPicturesDao.insertReportPictures(imagesList);
-                Pictures.imagesList.clear();
-                Log.i("DispatchPictures", "" + val.length);
-                finish();
-
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            finish();
-            if(val != null && val.length > 0){
-                InternetBroadcastReceiver.StartReportUploading(getApplicationContext());
-                Toast.makeText(getApplicationContext(), "Pictures saved", Toast.LENGTH_SHORT).show();
-            }
-            else
-                Toast.makeText(getApplicationContext(), "Failed to save pictures", Toast.LENGTH_SHORT).show();
-
-        }
     }
 
     public boolean checkPermissions(){

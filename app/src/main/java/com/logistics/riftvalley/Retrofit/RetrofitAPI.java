@@ -8,12 +8,20 @@ import com.logistics.riftvalley.data.model.Entity.ManufacturingSerialNumber;
 import com.logistics.riftvalley.data.model.Entity.Login;
 import com.google.gson.JsonObject;
 
+import java.util.Map;
+
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
+import retrofit2.http.HeaderMap;
+import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Url;
 
@@ -47,6 +55,9 @@ public interface RetrofitAPI {
     @GET()
     Call<JsonObject> getLotNumbers(@Header("Cookie") String cookie, @Url String lotNumbersUrl);
 
+    @GET()
+    Call<JsonObject> getDeliveryNotesList(@Header("Cookie") String cookie, @Url String deliveryNotes);
+
     @PATCH("SerialNumberDetails({shippingCaseNumber})")
     Call<JsonObject> patchShippingCaseNumber(@Header("Cookie") String cookie, @Path("shippingCaseNumber") int shippingCaseNumber, @Body ManufacturingSerialNumber manufacturingSerialNumber);
 
@@ -67,5 +78,11 @@ public interface RetrofitAPI {
 
     @POST("InventoryGenEntries")
     Call<JsonObject> goodsReceipt(@Header("Cookie") String cookie, @Body com.logistics.riftvalley.data.model.GoodReceipt.DocumentLines documentLines);
+
+    @Multipart
+    @POST("imageupload")
+    Call<ResponseBody> uploadImage(@Header("Cookie") String cookie, @Part RequestBody imageString,
+                                   @Part("docEntry") RequestBody docEntry, @Part("imageExtension") RequestBody imageExtension);
+
 
 }

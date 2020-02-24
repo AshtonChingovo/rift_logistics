@@ -2,17 +2,29 @@ package com.logistics.riftvalley.Utilities.UploadPictures;
 
 import android.app.IntentService;
 import android.content.Context;
-import android.content.Intent;
-import android.support.annotation.Nullable;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.support.annotation.NonNull;
+import android.util.Base64;
 import android.util.Log;
 
-import com.logistics.riftvalley.data.model.DB.AppDatabase;
-import com.logistics.riftvalley.data.model.Entity.DispatchPictures;
-import com.logistics.riftvalley.Retrofit.RetrofitInstance;
+import androidx.work.Worker;
+import androidx.work.WorkerParameters;
 
-import java.util.HashMap;
+import com.logistics.riftvalley.Retrofit.RetrofitInstance;
+import com.logistics.riftvalley.Utilities.SharedPreferences.SharedPreferencesClass;
+import com.logistics.riftvalley.data.model.DB.AppDatabase;
+import com.logistics.riftvalley.data.model.Dao.PicturesDao;
+import com.logistics.riftvalley.data.model.Entity.PicturesDB;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
-import java.util.Map;
+
+import id.zelory.compressor.Compressor;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -21,98 +33,86 @@ import java.util.Map;
  * TODO: Customize class - update intent actions, extra parameters and static
  * helper methods.
  */
-public class Uploads extends IntentService {
+public class Uploads extends Worker {
 
-    String userType;
+    PicturesDao picturesDao;
+
     AppDatabase database;
-    public static Map<String, String> apiHeaders = new HashMap<>();
-    public static Map<String, String> picturesAPIHeaders = new HashMap<>();
 
-    List<DispatchPictures> pictures;
+    // shows if there were any errors in trying to upload anything thus return Result.retry()
+    boolean retry = false;
 
-    // TODO: Rename actions, choose action names that describe tasks that this
-    // IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
-    private static final String ACTION_FOO = "com.example.beeching.rvc.Utilities.InternetBroadcastReceiver.action.FOO";
-    private static final String ACTION_BAZ = "com.example.beeching.rvc.Utilities.InternetBroadcastReceiver.action.BAZ";
+    List<PicturesDB> pictures;
 
-    // TODO: Rename parameters
-    private static final String EXTRA_PARAM1 = "com.example.beeching.rvc.Utilities.InternetBroadcastReceiver.extra.PARAM1";
-    private static final String EXTRA_PARAM2 = "com.example.beeching.rvc.Utilities.InternetBroadcastReceiver.extra.PARAM2";
-
-    public Uploads() {
-        super("ReportUploadService");
+    public Uploads(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+        super(context, workerParams);
     }
 
+    @NonNull
     @Override
-    public void onStart(@Nullable Intent intent, int startId) {
-        super.onStart(intent, startId);
-        Log.i("ARRAYLIST", " Service started |-|-|-| ");
-        database = AppDatabase.getDatabase(getApplicationContext());
-    }
+    public Result doWork() {
 
-    /**
-     * Starts this service to perform action Foo with the given parameters. If
-     * the service is already performing a task this action will be queued.
-     * @see IntentService
-     */
-    // TODO: Customize helper method2
-    public static void startActionFoo(Context context, String param1, String param2) {
-        Intent intent = new Intent(context, Uploads.class);
-        intent.setAction(ACTION_FOO);
-        intent.putExtra(EXTRA_PARAM1, param1);
-        intent.putExtra(EXTRA_PARAM2, param2);
-        context.startService(intent);
-    }
-
-    /**
-     * Starts this service to perform action Baz with the given parameters. If
-     * the service is already performing a task this action will be queued.
-     * @see IntentService
-     */
-    // TODO: Customize helper method
-    public static void startActionBaz(Context context, String param1, String param2) {
-        Intent intent = new Intent(context, Uploads.class);
-
-        intent.setAction(ACTION_BAZ);
-        intent.putExtra(EXTRA_PARAM1, param1);
-        intent.putExtra(EXTRA_PARAM2, param2);
-        context.startService(intent);
-
-    }
-
-    @Override
-    protected void onHandleIntent(Intent intent) {
-
+        Log.d("worker", "*|*|**|*|**|*|**|*|**|*|**|*|**|*|**|*|**|*|* WORKING *|*|**|*|**|*|**|*|**|*|**|*|**|*|**|*|**|*|**|*|**|*|**|*|*");
         database = AppDatabase.getDatabase(getApplicationContext());
 
-        uploadImages();
+        picturesDao = database.picturesDao();
+        pictures = picturesDao.getPicturesNotUploaded();
+
+        boolean uploaded;
+
+        if(pictures.size() == 0)
+            return Result.success();
+
+        File compressedImg;
+
+        for(PicturesDB picture: pictures){
+
+            try {
+
+                compressedImg = new Compressor(getApplicationContext()).compressToFile(new File(picture.getUri()));
+
+                // MultipartBody.Part is used to send also the actual file name
+                RequestBody imageString = RequestBody.create(MediaType.parse("multipart/form-data"), String.valueOf(convertToBase64(compressedImg.getAbsolutePath())));
+                RequestBody docEntryNumber = RequestBody.create(MediaType.parse("multipart/form-data"), String.valueOf(SharedPreferencesClass.getDocEntryNumber()));
+                RequestBody imageExtension = RequestBody.create(MediaType.parse("multipart/form-data"), compressedImg.getAbsolutePath().substring(compressedImg.getAbsolutePath().length() - 3));
+
+                uploaded = RetrofitInstance.uploadPicturesToSAP(
+                        SharedPreferencesClass.getCookie(), imageString, docEntryNumber, imageExtension
+                );
+
+                // If picture has been uploaded change the status to uploaded in the DB i.e upload = 2
+                if(uploaded){
+                    picture.setUploaded(2);
+                    picturesDao.updatePicture(picture);
+                }
+                else{
+                    retry = true;
+                }
+
+            } catch (IOException e) {
+                retry = true;
+                e.printStackTrace();
+                continue;
+                // return false;
+            }
+
+        }
+
+        return null;
 
     }
 
-    public boolean uploadImages(){
+    public String convertToBase64(String filePath){
 
-        RetrofitInstance.uploadPicturesToSAP(database.dispatchPicturesDao().getAllDispatchPictures());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Bitmap bitmap = BitmapFactory.decodeFile(filePath);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] imageBytes = baos.toByteArray();
+        String imageString = Base64.encodeToString(imageBytes, Base64.DEFAULT);
 
-        return true;
+        return imageString;
 
     }
 
-    /**
-     * Handle action Foo in the provided background thread with the provided
-     * parameters.
-     */
-    private void handleActionFoo(String param1, String param2) {
-        // TODO: Handle action Foo
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    /**
-     * Handle action Baz in the provided background thread with the provided
-     * parameters.
-     */
-    private void handleActionBaz(String param1, String param2) {
-        // TODO: Handle action Baz
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
 
 }

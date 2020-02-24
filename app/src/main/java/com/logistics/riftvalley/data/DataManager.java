@@ -1,17 +1,19 @@
 package com.logistics.riftvalley.data;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.logistics.riftvalley.Utilities.SharedPreferences.SharedPreferencesClass;
 import com.logistics.riftvalley.data.model.API_Helper;
 import com.logistics.riftvalley.data.model.Entity.Login;
+import com.logistics.riftvalley.data.model.Entity.PicturesDB;
 import com.logistics.riftvalley.data.model.Entity.SerialNumbers;
 import com.logistics.riftvalley.data.model.Entity.StaticVariables;
 import com.logistics.riftvalley.data.model.Entity.Warehouses;
-import com.logistics.riftvalley.data.model.GoodReceipt.DocumentLineProperties;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransfer;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransferLines;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransferLinesBinAllocations;
+import com.logistics.riftvalley.data.model.SalesOrder.DeliveryNote;
 import com.logistics.riftvalley.data.model.SalesOrder.SalesOrderList;
 import com.logistics.riftvalley.data.model.SalesOrder.SalesOrdersDocumentLines;
 import com.logistics.riftvalley.data.model.StockDisposals.DocumentLines;
@@ -232,9 +234,16 @@ public class DataManager implements _DataManager{
     }
 
     @Override
+    public void requestDeliveryNotesList(Context context) {
+        api_helper.requestDeliveryNotesList(context);
+    }
+
+    @Override
     public void salesOrderListResponse(String salesOrdersJsonString) {
 
         List<SalesOrderList> salesOrderLists = new ArrayList<>();
+
+        Log.d("SalesList", " DataManager jString : " + salesOrdersJsonString);
 
         if(salesOrdersJsonString != null){
             try {
@@ -246,7 +255,7 @@ public class DataManager implements _DataManager{
                 for(int i = 0; i < jsonArray.length(); i++){
 
                     JSONObject ordersObject = jsonArray.getJSONObject(i).getJSONObject("Orders");
-                    JSONObject ordersDocumentLinesObject = jsonArray.getJSONObject(i).getJSONObject("Orders/DocumentLineProperties");
+                    JSONObject ordersDocumentLinesObject = jsonArray.getJSONObject(i).getJSONObject("Orders/DocumentLines");
 
                     salesOrderLists.add(new SalesOrderList(ordersObject.getString("CardCode"),
                             ordersObject.getString("CardName"),
@@ -260,6 +269,7 @@ public class DataManager implements _DataManager{
 
             }
             catch (Exception e){
+                Log.d("SalesList", " DataManager ERROR : " + e.toString());
                 salesPresenter.success(false);
             }
 
@@ -267,6 +277,14 @@ public class DataManager implements _DataManager{
         else
             salesPresenter.success(false);
 
+    }
+
+    @Override
+    public void deliveryNotesResponse(List<DeliveryNote> deliveryNotesList) {
+        if(deliveryNotesList != null)
+            salesPresenter.deliveryNotesList(deliveryNotesList);
+        else
+            salesPresenter.success(false);
     }
 
     @Override
@@ -322,6 +340,43 @@ public class DataManager implements _DataManager{
     @Override
     public void reclassifyResult(boolean isSuccessful) {
         transfersPresenter.reclassifyResult(isSuccessful);
+    }
+
+    @Override
+    public void getPictures(Context context) {
+        api_helper.getPictures(context);
+    }
+
+    // pictures list from the database
+    @Override
+    public void picturesList(List<PicturesDB> pictures) {
+        salesPresenter.picturesList(pictures);
+    }
+
+    @Override
+    public void picturesUpdate(Context context, List<PicturesDB> pictures) {
+        api_helper.picturesUpdate(context, pictures);
+    }
+
+    @Override
+    public void picturesSave(Context context, List<PicturesDB> pictures) {
+        api_helper.picturesSave(context, pictures);
+    }
+
+    @Override
+    public void isPicturesOperationSuccessful(boolean isSuccessful, int operationId) {
+        // if operationID == 0 :: save operation
+        // if operationID == 1 :: save to drafts operation
+        if(operationId == 0)
+            salesPresenter.isSavePicturesSuccessful(isSuccessful);
+        else if(operationId == 1)
+            salesPresenter.isUpdatePicturesSuccessful(isSuccessful);
+
+    }
+
+    @Override
+    public void deleteImage(PicturesDB picture) {
+        api_helper.deleteImage(picture);
     }
 
     public StockTransfer generateStockTransfersJson(int systemNumber, int binAbsEntry){

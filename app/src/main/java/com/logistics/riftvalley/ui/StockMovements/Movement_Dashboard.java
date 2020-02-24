@@ -10,7 +10,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.logistics.riftvalley.ui.StockMovements.ProductionReturn.ProductionReturn;
-import com.logistics.riftvalley.ui.StockMovements.Sale.SalesOrdersList;
+import com.logistics.riftvalley.ui.StockMovements.Sale.SalesOrdersView;
 import com.logistics.riftvalley.ui.StockMovements.StockDisposals.StockDisposals;
 import com.logistics.riftvalley.ui.StockMovements.Transfers.Transfers_LandingPage;
 import com.logistics.riftvalley.R;
@@ -46,7 +46,7 @@ public class Movement_Dashboard extends AppCompatActivity {
                     return;
                 }
 
-                Intent intent = new Intent(Movement_Dashboard.this, SalesOrdersList.class);
+                Intent intent = new Intent(Movement_Dashboard.this, SalesOrdersView.class);
                 startActivity(intent);
 
             }

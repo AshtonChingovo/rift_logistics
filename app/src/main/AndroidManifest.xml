@@ -17,7 +17,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".ui.StockMovements.Transfers.GradeReclassification"></activity>
+
+        <activity android:name=".ui.StockMovements.Transfers.GradeReclassification"/>
 
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -27,12 +28,14 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
-        </provider> <!-- Internet Broadcast Receiver -->
+        </provider>
+        <!-- Internet Broadcast Receiver -->
         <receiver android:name=".Utilities.InternetBroadcastReceiver.InternetBroadcastReceiver">
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
+
         <receiver android:name=".Utilities.NewlandScanningReceiver.ScanReceiver">
             <intent-filter>
                 <action android:name="nlscan.action.SCANNER_RESULT" />
@@ -95,11 +98,11 @@
         <activity
             android:name=".ui.StockMovements.Transfers.CheckOutLandingPage"
             android:parentActivityName=".ui.StockMovements.Transfers.Transfers_LandingPage" />
-        <activity android:name=".ui.StockMovements.Sale.SalesOrdersList" />
-        <activity android:name=".ui.StockMovements.Sale.Pictures.Pictures" />
-        <activity android:name=".ui.StockMovements.Sale.Pictures.Caption" />
-        <activity android:name=".ui.StockMovements.Sale.Pictures.ViewPicture" />
-        <activity android:name=".ui.StockMovements.Sale.Pictures.PicturesList" />
+        <activity android:name=".ui.StockMovements.Sale.SalesOrdersView" />
+        <activity android:name=".ui.StockMovements.Sale.PicturesPackage.PicturesView" />
+        <activity android:name=".ui.StockMovements.Sale.PicturesPackage.Caption" />
+        <activity android:name=".ui.StockMovements.Sale.PicturesPackage.ViewPicture" />
+        <activity android:name=".ui.StockMovements.Sale.PicturesPackage.PicturesList" />
         <activity android:name=".App.PicturesNotUploadedList" />
         <activity
             android:name=".Utilities.NoConnection"

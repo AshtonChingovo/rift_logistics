@@ -13,4 +13,6 @@
     <color name="whiteOpacity">#99FFFFFF</color>
     <color name="white">#ffffff</color>
 
+    <color name="grayOpacity">#80FFFFFF</color>
+
 </resources>

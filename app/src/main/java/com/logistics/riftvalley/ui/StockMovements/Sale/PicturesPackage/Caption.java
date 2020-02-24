@@ -1,4 +1,4 @@
-package com.logistics.riftvalley.ui.StockMovements.Sale.Pictures;
+package com.logistics.riftvalley.ui.StockMovements.Sale.PicturesPackage;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -17,7 +17,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.logistics.riftvalley.R;
-import com.logistics.riftvalley.data.model.Entity.DispatchPictures;
+import com.logistics.riftvalley.data.model.Entity.PicturesDB;
 import com.logistics.riftvalley.Utilities.DeleteImageDialog;
 import com.logistics.riftvalley.Utilities.SharedPreferences.SharedPreferencesClass;
 
@@ -63,14 +63,17 @@ public class Caption extends AppCompatActivity implements DeleteImageDialog.Dele
             @Override
             public void onClick(View view) {
 
-                if(Pictures.imagesList.size() < 10){
+                if(PicturesView.imagesList.size() < 10){
                     date = new SimpleDateFormat("dd MMMM yyyy").format(new Date());
 
                     // unixDate initially set to 0 and will be added from a report's unixDate
                     unixDate = 0;
 
-                    Pictures.imagesList.add(new DispatchPictures(photoURI, date,
-                            SharedPreferencesClass.getSalesOrderCustomerName(), 0));
+                    PicturesView.imagesList.add(new PicturesDB(
+                            SharedPreferencesClass.getSalesOrderDocEntry(),
+                            photoURI,
+                            date,
+                            0, 0));
 
                     Log.i("ImagePath:", "" + photoURI);
 
@@ -89,9 +92,7 @@ public class Caption extends AppCompatActivity implements DeleteImageDialog.Dele
         delete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 delete();
-
             }
         });
     }
@@ -119,4 +120,5 @@ public class Caption extends AppCompatActivity implements DeleteImageDialog.Dele
     public void cancel() {
 
     }
+
 }

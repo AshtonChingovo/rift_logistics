@@ -66,11 +66,6 @@ public class HomeDashboardActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids) {
 
-            if(AppDatabase.getDatabase(HomeDashboardActivity.this).dispatchPicturesDao().getAllDispatchPictures().size() > 0)
-                picturesAvailable = true;
-            else
-                picturesAvailable = false;
-
             return null;
 
         }

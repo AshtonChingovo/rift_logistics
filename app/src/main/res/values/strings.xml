@@ -14,5 +14,6 @@
     <string name="salesOrderCardCodeSharedPreferences">salesOrderCardCode</string>
     <string name="salesOrderDocEntrySharedPreferences">salesOrderDocEntry</string>
     <string name="salesOrderCustomerNameSharedPreferences">salesOrderCustomerName</string>
+    <string name="docEntryNumber">docEntryNumber</string>
 
 </resources>

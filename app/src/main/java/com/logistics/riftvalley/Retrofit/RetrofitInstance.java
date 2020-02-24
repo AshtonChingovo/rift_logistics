@@ -2,12 +2,11 @@ package com.logistics.riftvalley.Retrofit;
 
 import android.util.Log;
 
+import com.logistics.riftvalley.data.model.Entity.PicturesDB;
 import com.logistics.riftvalley.data.model.Entity.SerialNumbersPatchObject;
-import com.logistics.riftvalley.data.model.GoodReceipt.DocumentLineProperties;
 import com.logistics.riftvalley.data.model.SalesOrder.DeliveryDocument;
 import com.logistics.riftvalley.data.model.StockDisposals.DocumentLines;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransfer;
-import com.logistics.riftvalley.data.model.Entity.DispatchPictures;
 import com.logistics.riftvalley.data.model.Entity.ManufacturingSerialNumber;
 import com.logistics.riftvalley.data.model.Entity.Login;
 
@@ -25,6 +24,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import okhttp3.OkHttpClient;
+import okhttp3.RequestBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -88,6 +88,69 @@ public class RetrofitInstance {
 
             Retrofit retroFit = new Retrofit.Builder()
                     .baseUrl("https://rivdb:50000/b1s/v1/")
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .client(client)
+                    .build();
+
+            return retroFit;
+
+        }catch (Exception e){
+            Log.i("ResponseSize", "Size: Retrofit -- " + e.toString());
+        }
+
+        return null;
+
+    }
+
+    public static Retrofit getSwagggerAPI(){
+
+        try{
+
+            // Create a trust manager that does not validate certificate chains
+            final TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        @Override
+                        public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                        }
+
+                        @Override
+                        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                        }
+
+                        @Override
+                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                            return new java.security.cert.X509Certificate[]{};
+                        }
+                    }
+            };
+
+            // Install the all-trusting trust manager
+            final SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+
+            // Create an ssl socket factory with our all-trusting manager
+            final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+
+            HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+            interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .connectTimeout(1, TimeUnit.MINUTES)
+                    .readTimeout(1, TimeUnit.MINUTES)
+                    .writeTimeout(1, TimeUnit.MINUTES)
+                    .addInterceptor(interceptor)
+                    .sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0])
+                    .hostnameVerifier(new HostnameVerifier() {
+                        @Override
+                        public boolean verify(String hostname, SSLSession session) {
+                            return true;
+                        }
+                    })
+                    .build();
+
+            Retrofit retroFit = new Retrofit.Builder()
+                    .baseUrl("http://192.168.14.144/LAPI/swagger")
                     .addConverterFactory(GsonConverterFactory.create())
                     .client(client)
                     .build();
@@ -270,9 +333,9 @@ public class RetrofitInstance {
 
     public static String getSalesOrders(String cookie, String warehouseCode){
 
-        String url = "$crossjoin(Orders,Orders/DocumentLineProperties)?$expand=Orders($select=CardCode, CardName,DocEntry), " +
-                "Orders/DocumentLineProperties($select=ItemCode,Quantity,RemainingOpenQuantity) &$filter=Orders/DocEntry eq Orders/DocumentLineProperties/DocEntry and " +
-                "Orders/DocumentStatus eq 'O' and Orders/DocumentLineProperties/WarehouseCode  eq '" + warehouseCode + "' &$orderby=Orders/DocumentStatus desc, Orders/DocEntry desc";
+        String url = "$crossjoin(Orders,Orders/DocumentLines)?$expand=Orders($select=CardCode,CardName,DocEntry), " +
+                "Orders/DocumentLines($select=ItemCode,Quantity,RemainingOpenQuantity) &$filter=Orders/DocEntry eq Orders/DocumentLines/DocEntry and " +
+                "Orders/DocumentStatus eq 'O' and Orders/DocumentLines/WarehouseCode  eq '" + warehouseCode + "' &$orderby=Orders/DocumentStatus desc, Orders/DocEntry desc";
 
         RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
         Call retrofitGET = retrofitAPI.getSalesOrdersList(cookie, url);
@@ -289,6 +352,44 @@ public class RetrofitInstance {
 
                 if(response.isSuccessful() && response.code() == 200){
                     Log.i("ScanningProcess", "SalesOrders: " + response.body());
+                    return response.body().toString();
+                }
+
+                return null;
+
+            }
+            else
+                return null;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.i("ScanningProcess", "SalesOrders# Error: " + e.toString());
+            return null;
+        }
+
+
+    }
+
+    public static String getDeliveryNotesList(String cookie, String warehouseCode){
+
+        String url = "$crossjoin(DeliveryNotes,DeliveryNotes/DocumentLines)?$expand=DeliveryNotes($select=CardName,DocEntry), " +
+                "DeliveryNotes/DocumentLines($select=DeliveryNotes/DocumentLines/DocEntry,WarehouseCode,LineNum)" +
+                "&$filter=DeliveryNotes/DocEntry eq DeliveryNotes/DocumentLines/DocEntry " +
+                "and DeliveryNotes/DocumentLines/WarehouseCode eq '" + warehouseCode + "'";
+
+        RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
+        Call retrofitGET = retrofitAPI.getDeliveryNotesList(cookie, url);
+
+        try {
+
+            response = retrofitGET.execute();
+
+            if(response.isSuccessful() && response.code() == 200){
+                return response.body().toString();
+            }
+            else if(response.code() == 401){
+
+                if(response.isSuccessful() && response.code() == 200){
                     return response.body().toString();
                 }
 
@@ -460,7 +561,12 @@ public class RetrofitInstance {
 
     }
 
-    public static boolean uploadPicturesToSAP(List<DispatchPictures> dispatchPictures){
+    public static boolean uploadPicturesToSAP(String cookie, RequestBody imageString, RequestBody docEntryNumber, RequestBody imageExtention){
+
+        RetrofitAPI retrofitAPI = getSwagggerAPI().create(RetrofitAPI.class);
+
+        Call retrofitGET = retrofitAPI.uploadImage(cookie, imageString, docEntryNumber, imageExtention);
+
         return true;
     }
 

@@ -7,32 +7,39 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
 
-public class InternetBroadcastReceiver extends BroadcastReceiver {
+import androidx.work.Constraints;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+
+public class InternetBroadcastReceiver {
 
     public static Intent serviceIntent = null;
 
-    @Override
-    public void onReceive(Context context, Intent intent) {
+    public static void StartReportUploading(Context context) {
 
         Log.i("InternetBroadcast", "IN HERE");
 
         if(checkConnectivity(context)){
 
-            Log.i("InternetBroadcast", "IN HERE");
-            serviceIntent = new Intent(context, Uploads.class);
-            context.startService(serviceIntent);
+            // Create a Constraints object that defines when the task should run
+            Constraints constraints = new Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build();
 
+            OneTimeWorkRequest uploadWorkRequest = new OneTimeWorkRequest.Builder(Uploads.class)
+                    .setConstraints(constraints)
+                    .build();
+
+            WorkManager workManager = WorkManager.getInstance();
+
+            workManager.beginUniqueWork(
+                    "TAG",
+                    ExistingWorkPolicy.REPLACE,
+                    uploadWorkRequest
+            ).enqueue();
         }
-    }
-
-    public static void StartReportUploading(Context context){
-
-        if(checkConnectivity(context)){
-            Log.i("InternetBroadcast", "IN HERE");
-            serviceIntent = new Intent(context, Uploads.class);
-            context.startService(serviceIntent);
-        }
-
     }
 
     public static boolean checkConnectivity(Context context){

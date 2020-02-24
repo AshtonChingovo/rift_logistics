@@ -1,5 +1,9 @@
 package com.logistics.riftvalley.ui.StockMovements.Sale;
 
+import android.content.Context;
+
+import com.logistics.riftvalley.data.model.Entity.PicturesDB;
+import com.logistics.riftvalley.data.model.SalesOrder.DeliveryNote;
 import com.logistics.riftvalley.data.model.SalesOrder.SalesOrderDocumentLinesSerialNumbers;
 import com.logistics.riftvalley.data.model.SalesOrder.SalesOrderList;
 import org.json.JSONArray;
@@ -10,7 +14,11 @@ public interface _SalesPresenter {
 
     void initializeView(_SalesView salesView);
 
+    void initializeView(_PicturesView picturesView);
+
     void requestSalesOrdersList();
+
+    void requestDeliveryNotesList(Context context);
 
     void moveToFumigation(String serialNumber, String warehouseCode, int source);
 
@@ -22,6 +30,8 @@ public interface _SalesPresenter {
 
     void salesOrdersList(List<SalesOrderList> salesOrderLists);
 
+    void deliveryNotesList(List<DeliveryNote> deliveryNotesList);
+
     void doesSerialNumberExistInSAP(String serialNumber, String operationSource);
 
     void setShippingCaseNumberForSerialNumberSAP(String serialNumber, String shippingCaseNumber);
@@ -32,4 +42,21 @@ public interface _SalesPresenter {
 
     void shippingCaseNumber(boolean isSuccessful, String message, JSONArray jsonArray);
 
+    /*
+    *   PicturesView methods
+    * */
+
+    void updatePictures(Context context, List<PicturesDB> picturesDBList);
+
+    void savePictures(Context context, List<PicturesDB> picturesDBList);
+
+    void getPictures(Context context);
+
+    void picturesList(List<PicturesDB> picturesDBS);
+
+    void isSavePicturesSuccessful(boolean isSalesOperationSuccessful);
+
+    void isUpdatePicturesSuccessful(boolean isUpdatePicturesSuccessful);
+
+    void delete(PicturesDB picture);
 }

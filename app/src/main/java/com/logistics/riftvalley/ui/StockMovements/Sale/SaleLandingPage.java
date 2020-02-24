@@ -11,7 +11,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.logistics.riftvalley.ui.StockMovements.Sale.Pictures.PicturesList;
 import com.logistics.riftvalley.R;
 import com.logistics.riftvalley.Utilities.SharedPreferences.SharedPreferencesClass;
 
@@ -98,9 +97,6 @@ public class SaleLandingPage extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
-        Intent intent = new Intent(SaleLandingPage.this, PicturesList.class);
-        startActivity(intent);
 
         return true;
 

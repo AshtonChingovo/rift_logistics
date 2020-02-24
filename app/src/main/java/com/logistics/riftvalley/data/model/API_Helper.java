@@ -1,17 +1,22 @@
 package com.logistics.riftvalley.data.model;
 
+import android.content.Context;
 import android.os.AsyncTask;
+import android.support.constraint.ConstraintLayout;
 import android.util.Log;
 import com.logistics.riftvalley.Retrofit.RetrofitInstance;
 import com.logistics.riftvalley.Utilities.SharedPreferences.SharedPreferencesClass;
 import com.logistics.riftvalley.data.DataManager;
 import com.logistics.riftvalley.data._DataManager;
+import com.logistics.riftvalley.data.model.DB.AppDatabase;
+import com.logistics.riftvalley.data.model.Dao.PicturesDao;
 import com.logistics.riftvalley.data.model.Entity.Login;
+import com.logistics.riftvalley.data.model.Entity.PicturesDB;
 import com.logistics.riftvalley.data.model.Entity.SerialNumbersPatchObject;
 import com.logistics.riftvalley.data.model.Entity.Warehouses;
-import com.logistics.riftvalley.data.model.GoodReceipt.DocumentLineProperties;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransfer;
 import com.logistics.riftvalley.data.model.SalesOrder.DeliveryDocument;
+import com.logistics.riftvalley.data.model.SalesOrder.DeliveryNote;
 import com.logistics.riftvalley.data.model.SalesOrder.SalesOrdersDocumentLines;
 import com.logistics.riftvalley.data.model.StockDisposals.DocumentLines;
 
@@ -29,8 +34,16 @@ public class API_Helper implements _API_Helper {
     // reference to DataManagerPresenter
     _DataManager dataManager;
 
+    Context context;
+
     // warehouses list
     List<Warehouses> warehouses = new ArrayList<>();
+
+    // pictures list
+    List<PicturesDB> pictures = new ArrayList<>();
+
+    // picture object
+    PicturesDB picture;
 
     // binLocationAbsEntryNumber is set to zero for endpoints that do not require it
     int binLocationAbsEntryNumber = 0;
@@ -115,7 +128,18 @@ public class API_Helper implements _API_Helper {
     }
 
     @Override
+    public void requestDeliveryNotesList(Context context) {
+        this.context = context;
+        new GetDeliveryNotesList().execute();
+    }
+
+    @Override
     public void salesOrderListResponse(String salesOrdersJsonString) {
+
+    }
+
+    @Override
+    public void deliveryNotesResponse(List<DeliveryNote> deliveryNotesList) {
 
     }
 
@@ -177,6 +201,40 @@ public class API_Helper implements _API_Helper {
     @Override
     public void reclassifyResult(boolean isSuccessful) {
 
+    }
+
+    @Override
+    public void getPictures(Context context) {
+        this.context = context;
+        new GetAlreadyTakenPictures().execute();
+    }
+
+    @Override
+    public void picturesList(List<PicturesDB> pictures) {
+        this.context = context;
+    }
+
+    @Override
+    public void picturesUpdate(Context context, List<PicturesDB> pictures) {
+        this.context = context;
+        new UpdatePictures().execute();
+    }
+
+    @Override
+    public void picturesSave(Context context, List<PicturesDB> pictures) {
+        this.context = context;
+        new SavePictures().execute();
+    }
+
+    @Override
+    public void isPicturesOperationSuccessful(boolean isSuccessful, int operationId) {
+
+    }
+
+    @Override
+    public void deleteImage(PicturesDB picture) {
+        this.picture = picture;
+        new DeletePicture().execute();
     }
 
     public class LoginToSAP extends AsyncTask<Login, Void, Void> {
@@ -458,12 +516,12 @@ public class API_Helper implements _API_Helper {
 
     public class GetSalesOrdersList extends AsyncTask<Void, Void, Void> {
 
-        String responseVal;
+        String jsonResponseString;
 
         @Override
         protected Void doInBackground(Void... voids) {
 
-            responseVal = RetrofitInstance.getSalesOrders(SharedPreferencesClass.getCookie(), SharedPreferencesClass.getWarehouseCode().trim().toUpperCase());
+            jsonResponseString = RetrofitInstance.getSalesOrders(SharedPreferencesClass.getCookie(), SharedPreferencesClass.getWarehouseCode().trim().toUpperCase());
 
             return null;
 
@@ -472,7 +530,68 @@ public class API_Helper implements _API_Helper {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            dataManager.salesOrderListResponse(responseVal);
+
+            Log.d("SalesList", " API_Helper jString : " + jsonResponseString);
+
+            dataManager.salesOrderListResponse(jsonResponseString);
+        }
+    }
+
+    public class GetDeliveryNotesList extends AsyncTask<Void, Void, Void> {
+
+        String jsonResponseString;
+
+        List<DeliveryNote> deliveryNotesList = new ArrayList<>();
+
+        boolean isSuccessful;
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            PicturesDao picturesDao = AppDatabase.getDatabase(context).picturesDao();
+
+            jsonResponseString = RetrofitInstance.getDeliveryNotesList(SharedPreferencesClass.getCookie(), SharedPreferencesClass.getWarehouseCode().trim().toUpperCase());
+
+            if(jsonResponseString != null){
+                try {
+
+                    JSONObject jsonObject;
+
+                    jsonObject = new JSONObject(jsonResponseString);
+                    JSONArray jsonArray = jsonObject.getJSONArray("value");
+
+                    for(int i = 0; i < jsonArray.length(); i++){
+
+                        JSONObject deliveryNoteObject = jsonArray.getJSONObject(i).getJSONObject("DeliveryNotes");
+
+                        DeliveryNote deliveryNote = new DeliveryNote(deliveryNoteObject.getString("CardName"),
+                                deliveryNoteObject.getInt("DocEntry"));
+
+                        deliveryNote.setTotalUploaded(picturesDao.getPicturesUploadedCount(deliveryNote.getDocEntry()));
+                        deliveryNote.setTotalPictures(picturesDao.getPicturesSavedTotal(deliveryNote.getDocEntry()));
+
+                        deliveryNotesList.add(deliveryNote);
+
+                    }
+
+                }
+                catch (Exception e){
+                    Log.d("SalesList", " DataManager ERROR : " + e.toString());
+
+                }
+
+            }
+            else
+                isSuccessful = false;
+
+            return null;
+
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            dataManager.deliveryNotesResponse(deliveryNotesList);
         }
     }
 
@@ -663,5 +782,102 @@ public class API_Helper implements _API_Helper {
         }
     }
 
+    /*
+    *   PicturesView
+    * */
+    public class GetAlreadyTakenPictures extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... aVoid) {
+
+            PicturesDao picturesDao = AppDatabase.getDatabase(context).picturesDao();
+
+            pictures = picturesDao.getPicturesTakenAlready(SharedPreferencesClass.getDocEntryNumber());
+
+            return null;
+
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            dataManager.picturesList(pictures);
+        }
+    }
+
+    public class UpdatePictures extends AsyncTask<Void, Void, Void> {
+
+        long insertOps;
+        int updateOps;
+
+        @Override
+        protected Void doInBackground(Void... aVoid) {
+
+            PicturesDao picturesDao = AppDatabase.getDatabase(context).picturesDao();
+
+            for(PicturesDB picture : pictures){
+                if(picture.getId() == 0)
+                    insertOps = picturesDao.insertOnePicture(picture);
+                else
+                    updateOps = picturesDao.updatePicture(picture);
+            }
+
+            return null;
+
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            dataManager.isPicturesOperationSuccessful(insertOps > 0 || updateOps > 0, 1);
+        }
+    }
+
+    public class SavePictures extends AsyncTask<Void, Void, Void> {
+
+        long insertOps;
+        int updateOps;
+
+        @Override
+        protected Void doInBackground(Void... aVoid) {
+
+            PicturesDao picturesDao = AppDatabase.getDatabase(context).picturesDao();
+
+            for(PicturesDB picture : pictures){
+                if(picture.getId() == 0)
+                    insertOps = picturesDao.insertOnePicture(picture);
+                else
+                    updateOps = picturesDao.updatePicture(picture);
+            }
+
+            return null;
+
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            dataManager.isPicturesOperationSuccessful(insertOps > 0 || updateOps > 0, 0);
+        }
+    }
+
+    public class DeletePicture extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... aVoid) {
+
+            PicturesDao picturesDao = AppDatabase.getDatabase(context).picturesDao();
+
+            picturesDao.deletePicture(picture);
+
+            return null;
+
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+        }
+    }
 
 }

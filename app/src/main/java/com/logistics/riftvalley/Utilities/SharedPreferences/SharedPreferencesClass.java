@@ -112,4 +112,18 @@ public class SharedPreferencesClass {
         return sharedPref.getString(context.getString(R.string.salesOrderCustomerNameSharedPreferences), null);
     }
 
+
+    // set and get docEntry number
+    public static void writeDocEntryNumber(int docEntry){
+
+        editor.putInt(context.getString(R.string.docEntryNumber), docEntry);
+        editor.apply();
+
+    }
+
+    public static int getDocEntryNumber(){
+        return sharedPref.getInt(context.getString(R.string.docEntryNumber), 0);
+    }
+
+
 }

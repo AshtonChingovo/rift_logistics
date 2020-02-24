@@ -26,6 +26,7 @@ import com.logistics.riftvalley.data.model.NewInventory.StockTransferLines;
 import com.logistics.riftvalley.data.model.NewInventory.StockTransferLinesBinAllocations;
 import com.logistics.riftvalley.Retrofit.RetrofitInstance;
 import com.logistics.riftvalley.Utilities.SharedPreferences.SharedPreferencesClass;
+import com.logistics.riftvalley.data.model.SalesOrder.DeliveryNote;
 import com.logistics.riftvalley.data.model.SalesOrder.SalesOrderDocumentLinesSerialNumbers;
 import com.logistics.riftvalley.data.model.SalesOrder.SalesOrderList;
 
@@ -136,6 +137,11 @@ public class MoveToDispatch extends AppCompatActivity implements _SalesView{
 
     @Override
     public void salesOrdersList(List<SalesOrderList> salesOrderLists) {
+
+    }
+
+    @Override
+    public void deliveryNotesList(List<DeliveryNote> deliveryNoteList) {
 
     }
 
