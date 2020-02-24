@@ -7,8 +7,10 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.View;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.logistics.riftvalley.R;
@@ -22,6 +24,8 @@ public class StackLocationDialog extends DialogFragment {
 
     TextView stackLocationCode;
     TextView stackLocation;
+
+    RadioGroup radioGroupOptions;
     RadioButton overflow;
 
     StackLocation mListener;
@@ -36,6 +40,7 @@ public class StackLocationDialog extends DialogFragment {
 
         // stackLocationCode = view.findViewById(R.id.stackLocationCode);
         stackLocation = view.findViewById(R.id.location);
+        radioGroupOptions = view.findViewById(R.id.radioGroupOptions);
         overflow = view.findViewById(R.id.overflow);
 
         switch(SharedPreferencesClass.getWarehouseCode()){
@@ -64,11 +69,19 @@ public class StackLocationDialog extends DialogFragment {
                     }
                 });
 
-        overflow.setOnClickListener(new View.OnClickListener() {
+        radioGroupOptions.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
-                mListener.StackLocationOkClicked(OVERFLOW_AREA);
-                dismiss();
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+
+                if(checkedId == R.id.overflow){
+                    mListener.StackLocationOkClicked(OVERFLOW_AREA);
+                    dismiss();
+                }
+                else if(checkedId == R.id.receivingArea){
+                    mListener.StackLocationOkClicked(RECEIVING_AREA);
+                    dismiss();
+                }
+
             }
         });
 

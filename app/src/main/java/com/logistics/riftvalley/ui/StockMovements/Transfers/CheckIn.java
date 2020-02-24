@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -27,6 +28,8 @@ import com.logistics.riftvalley.data.model.NewInventory.StockTransferLinesBinAll
 import com.logistics.riftvalley.R;
 import com.logistics.riftvalley.Retrofit.RetrofitInstance;
 import com.logistics.riftvalley.Utilities.SharedPreferences.SharedPreferencesClass;
+import com.logistics.riftvalley.ui.NewInventory.ScannedBaleDialog;
+import com.logistics.riftvalley.ui.StackLocationDialog;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,7 +40,7 @@ import java.util.List;
 
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.*;
 
-public class CheckIn extends AppCompatActivity implements _TransfersView{
+public class CheckIn extends AppCompatActivity implements _TransfersView, StackLocationDialog.StackLocation{
 
     Toolbar toolbar;
     RecyclerView recyclerView;
@@ -69,7 +72,20 @@ public class CheckIn extends AppCompatActivity implements _TransfersView{
         recyclerView.setAdapter(new RecyclerViewAdapter());
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        stackLocation.setVisibility(View.INVISIBLE);
+        // set the stack location to the warehouse Receiving area
+        SharedPreferencesClass.writeStackLocation((SharedPreferencesClass.getWarehouseCode() + "-" + RECEIVING_AREA).trim().toUpperCase());
+
+        stackLocation.setText(RECEIVING_AREA_STRING);
+
+        stackLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DialogFragment dialog = new StackLocationDialog();
+                dialog.show(getSupportFragmentManager(), "Dialog");
+            }
+        });
+
+        // stackLocation.setVisibility(View.INVISIBLE);
 
 /*        setSupportActionBar(toolbar);
 
@@ -101,7 +117,7 @@ public class CheckIn extends AppCompatActivity implements _TransfersView{
                 barcode = intent.getStringExtra("SCAN_BARCODE1");
 
                 // write the aisle code to the SharePreference
-                SharedPreferencesClass.writeStackLocation(DISPATCH_AREA_CODE);
+                // SharedPreferencesClass.writeStackLocation(DISPATCH_AREA_CODE);
 
                 // new TransferStock().execute(intent.getStringExtra("SCAN_BARCODE1"));
                 transfersPresenter.requestSystemNumber(intent.getStringExtra(SCAN_BARCODE1), null, CHECK_IN);
@@ -138,6 +154,30 @@ public class CheckIn extends AppCompatActivity implements _TransfersView{
 
     @Override
     public void warehouses(List<Warehouses> warehouses) {
+
+    }
+
+    @Override
+    public void StackLocationOkClicked(String stackLocation) {
+
+        if(stackLocation.equals("") || stackLocation.trim().equals("")){
+            DialogFragment dialog = new StackLocationDialog();
+            dialog.show(getSupportFragmentManager(), "Dialog");
+            return;
+        }
+
+        //SharedPreferencesClass.writeStackLocation((StackLocationDialog.aisleCode + stackLocation).trim().toUpperCase());
+        SharedPreferencesClass.writeStackLocation((SharedPreferencesClass.getWarehouseCode() + "-" + stackLocation).trim().toUpperCase());
+
+        if(stackLocation.equalsIgnoreCase(OVERFLOW_AREA))
+            this.stackLocation.setText(stackLocation.trim().toUpperCase());
+        else if(stackLocation.equalsIgnoreCase(RECEIVING_AREA))
+            this.stackLocation.setText(RECEIVING_AREA_STRING);
+
+    }
+
+    @Override
+    public void StackLocationReopenDialog() {
 
     }
 

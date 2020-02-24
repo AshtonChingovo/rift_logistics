@@ -55,4 +55,6 @@ public class PublicStaticVariables {
 
     public static int SERIAL_AND_BATCH_NUMBER_BASELINE = 0;
 
+    public static String RECEIVING_AREA_STRING = "RECEIVING AREA";
+
 }

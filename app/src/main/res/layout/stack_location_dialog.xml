@@ -26,6 +26,10 @@
         android:layout_height="100dp"
         android:layout_marginTop="32dp"
         android:ems="10"
+        android:focusable="auto"
+        android:focusableInTouchMode="true"
+        android:gravity="center"
+        android:hint="#"
         android:inputType="text|number"
         android:textSize="40sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -52,10 +56,13 @@
         app:layout_constraintTop_toBottomOf="@+id/heading" />-->
 
     <RadioGroup
+        android:id="@+id/radioGroupOptions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:layout_marginBottom="16dp"
+        android:focusable="auto"
+        android:focusableInTouchMode="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -69,13 +76,13 @@
             android:layout_marginBottom="16dp"
             android:text="OVERFLOW"
             android:textSize="18sp"
-            android:textStyle="bold"/>
+            android:textStyle="bold" />
 
         <RadioButton
             android:id="@+id/receivingArea"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="10dp"
             android:layout_marginBottom="16dp"
             android:text="RECEIVING AREA"
             android:textSize="18sp"

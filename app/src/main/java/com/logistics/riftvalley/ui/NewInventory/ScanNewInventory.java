@@ -86,6 +86,8 @@ public class ScanNewInventory extends AppCompatActivity implements _NewInventory
         // set the stack location to the warehouse Receiving area
         SharedPreferencesClass.writeStackLocation((SharedPreferencesClass.getWarehouseCode() + "-" + RECEIVING_AREA).trim().toUpperCase());
 
+        stackLocation.setText(RECEIVING_AREA_STRING);
+
         stackLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -140,8 +142,13 @@ public class ScanNewInventory extends AppCompatActivity implements _NewInventory
             return;
         }
 
-        SharedPreferencesClass.writeStackLocation((StackLocationDialog.aisleCode + stackLocation).trim().toUpperCase());
-        this.stackLocation.setText(StackLocationDialog.aisleCode + stackLocation.trim().toUpperCase());
+        //SharedPreferencesClass.writeStackLocation((StackLocationDialog.aisleCode + stackLocation).trim().toUpperCase());
+        SharedPreferencesClass.writeStackLocation((SharedPreferencesClass.getWarehouseCode() + "-" + stackLocation).trim().toUpperCase());
+
+        if(stackLocation.equalsIgnoreCase(OVERFLOW_AREA))
+            this.stackLocation.setText(stackLocation.trim().toUpperCase());
+        else if(stackLocation.equalsIgnoreCase(RECEIVING_AREA))
+            this.stackLocation.setText(RECEIVING_AREA_STRING);
 
     }
 
