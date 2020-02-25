@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -89,11 +90,11 @@ public class InWarehouse extends AppCompatActivity implements StackLocationDialo
         recyclerView.setAdapter(new RecyclerViewAdapter());
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-/*        setSupportActionBar(toolbar);
+        setSupportActionBar(toolbar);
 
         ActionBar actionbar = getSupportActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true);
-        actionbar.setHomeAsUpIndicator(R.drawable.back); */
+        actionbar.setHomeAsUpIndicator(R.drawable.back);
 
         // initialize view in Presenter
         transfersPresenter.initializeTransfersView(this);
@@ -124,7 +125,7 @@ public class InWarehouse extends AppCompatActivity implements StackLocationDialo
             }
         };
 
-        mFilter= new IntentFilter("nlscan.action.SCANNER_RESULT");
+        mFilter = new IntentFilter("nlscan.action.SCANNER_RESULT");
         this.registerReceiver(mReceiver, mFilter);
 
     }
@@ -140,7 +141,15 @@ public class InWarehouse extends AppCompatActivity implements StackLocationDialo
         }
 
         SharedPreferencesClass.writeStackLocation((SharedPreferencesClass.getWarehouseCode() + "-" + stackLocation).trim().toUpperCase());
-        this.stackLocation.setText(StackLocationDialog.aisleCode  + " -" +  stackLocation.trim().toUpperCase());
+
+        // this.stackLocation.setText(StackLocationDialog.aisleCode  + " -" +  stackLocation.trim().toUpperCase());
+
+        if(stackLocation.equalsIgnoreCase(OVERFLOW_AREA))
+            this.stackLocation.setText(stackLocation.trim().toUpperCase());
+        else if(stackLocation.equalsIgnoreCase(RECEIVING_AREA))
+            this.stackLocation.setText(RECEIVING_AREA_STRING);
+        else
+            this.stackLocation.setText(SharedPreferencesClass.getWarehouseCode() + "-" + stackLocation);
 
     }
 
@@ -157,6 +166,7 @@ public class InWarehouse extends AppCompatActivity implements StackLocationDialo
         if(isSuccessful)
             barcodes.add(0, barcode);
         else{
+
 
             barcodes.add(0, "B_" + barcode);
 

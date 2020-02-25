@@ -17,6 +17,8 @@
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
         app:title="SALES"
+        android:elevation="4dp"
+
         app:titleTextColor="@color/fontColor"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

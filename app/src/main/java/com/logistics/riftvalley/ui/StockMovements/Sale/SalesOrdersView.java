@@ -68,9 +68,9 @@ public class SalesOrdersView extends AppCompatActivity implements _SalesView{
         fragmentManager = getSupportFragmentManager();
         // openFragment(new SalesOrdersListFragment());
 
-        setSupportActionBar(toolbar);
-
         toolbar.setTitle("Sales Orders");
+
+        setSupportActionBar(toolbar);
 
         ActionBar actionbar = getSupportActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true);

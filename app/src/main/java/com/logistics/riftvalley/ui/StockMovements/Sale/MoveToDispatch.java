@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -66,13 +67,6 @@ public class MoveToDispatch extends AppCompatActivity implements _SalesView{
         recyclerView = findViewById(R.id.recyclerView);
         progressBar = findViewById(R.id.progressBar);
 
-
-        setSupportActionBar(toolbar);
-
-/*        ActionBar actionbar = getSupportActionBar();
-        actionbar.setDisplayHomeAsUpEnabled(true);
-        actionbar.setHomeAsUpIndicator(R.drawable.back);*/
-
         toolbar.setTitle("Move To Dispatch");
 
         stackLocation = SharedPreferencesClass.getWarehouseCode() + "-" + DISPATCH_AREA;
@@ -80,6 +74,12 @@ public class MoveToDispatch extends AppCompatActivity implements _SalesView{
 
         recyclerView.setAdapter(new RecyclerViewAdapter());
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        setSupportActionBar(toolbar);
+
+        ActionBar actionbar = getSupportActionBar();
+        actionbar.setDisplayHomeAsUpEnabled(true);
+        actionbar.setHomeAsUpIndicator(R.drawable.back);
 
         // initialize view in Presenter
         salesPresenter.initializeView(this);

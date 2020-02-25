@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -102,6 +103,12 @@ public class ScanNewInventory extends AppCompatActivity implements _NewInventory
         recyclerView.setAdapter(new RecyclerViewAdapter());
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        setSupportActionBar(toolbar);
+
+        ActionBar actionbar = getSupportActionBar();
+        actionbar.setDisplayHomeAsUpEnabled(true);
+        actionbar.setHomeAsUpIndicator(R.drawable.back);
+
         // PDA scanning broadcast receiver
         mReceiver = new BroadcastReceiver() {
             @Override
@@ -149,6 +156,8 @@ public class ScanNewInventory extends AppCompatActivity implements _NewInventory
             this.stackLocation.setText(stackLocation.trim().toUpperCase());
         else if(stackLocation.equalsIgnoreCase(RECEIVING_AREA))
             this.stackLocation.setText(RECEIVING_AREA_STRING);
+        else
+            this.stackLocation.setText(SharedPreferencesClass.getWarehouseCode() + "-" + stackLocation);
 
     }
 

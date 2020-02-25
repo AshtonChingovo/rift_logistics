@@ -2,6 +2,8 @@ package com.logistics.riftvalley.Utilities;
 
 public class PublicStaticVariables {
 
+    public static final String COMPANY_DB = "NT_TEST";
+
     // activity ids
     public static final int WAREHOUSE_NAME_CODE_LIST_ACTIVITY = 1;
     public static final int WAREHOUSE_LOCATIONS_MOVEMENTS_ACTIVITY = 2;

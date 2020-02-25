@@ -19,7 +19,11 @@ import com.logistics.riftvalley.data.model.Entity.PicturesDB;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import id.zelory.compressor.Compressor;
@@ -58,7 +62,7 @@ public class Uploads extends Worker {
         picturesDao = database.picturesDao();
         pictures = picturesDao.getPicturesNotUploaded();
 
-        boolean uploaded;
+        boolean uploaded = false;
 
         if(pictures.size() == 0)
             return Result.success();
@@ -72,13 +76,13 @@ public class Uploads extends Worker {
                 compressedImg = new Compressor(getApplicationContext()).compressToFile(new File(picture.getUri()));
 
                 // MultipartBody.Part is used to send also the actual file name
-                RequestBody imageString = RequestBody.create(MediaType.parse("multipart/form-data"), String.valueOf(convertToBase64(compressedImg.getAbsolutePath())));
+                RequestBody imageString = RequestBody.create(MediaType.parse("multipart/form-data"), String.valueOf(convertToBase64(new File(picture.getUri()))));
                 RequestBody docEntryNumber = RequestBody.create(MediaType.parse("multipart/form-data"), String.valueOf(SharedPreferencesClass.getDocEntryNumber()));
                 RequestBody imageExtension = RequestBody.create(MediaType.parse("multipart/form-data"), compressedImg.getAbsolutePath().substring(compressedImg.getAbsolutePath().length() - 3));
 
-                uploaded = RetrofitInstance.uploadPicturesToSAP(
+                /*uploaded = RetrofitInstance.uploadPicturesToSAP(
                         SharedPreferencesClass.getCookie(), imageString, docEntryNumber, imageExtension
-                );
+                );*/
 
                 // If picture has been uploaded change the status to uploaded in the DB i.e upload = 2
                 if(uploaded){
@@ -102,17 +106,55 @@ public class Uploads extends Worker {
 
     }
 
-    public String convertToBase64(String filePath){
+    public String convertToBase64(File fileName){
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+
+            // give your image file url in mCurrentPhotoPath
+            // Bitmap bitmap = BitmapFactory.decodeFile("/data/data/com.logistics.riftvalley/cache/images/RVC_1582627626_.jpg");
+
+            InputStream inputStream = new FileInputStream(fileName);//You can get an inputStream using any IO API
+            byte[] bytes;
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            try {
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    output.write(buffer, 0, bytesRead);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            bytes = output.toByteArray();
+
+            String imageString = Base64.encodeToString(bytes, Base64.DEFAULT);
+
+/*
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            // In case you want to compress your image, here it's at 40%
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+            byte[] byteArray = byteArrayOutputStream.toByteArray();
+            String imageString = Base64.encodeToString(byteArray, Base64.DEFAULT);
+*/
+
+/*        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Bitmap bitmap = BitmapFactory.decodeFile(filePath);
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] imageBytes = baos.toByteArray();
-        String imageString = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+        String imageString = Base64.encodeToString(imageBytes, Base64.DEFAULT);*/
 
-        return imageString;
+            Log.d("ImageString", " image path :: " + fileName.getAbsolutePath());
+            Log.d("ImageString", " image :: :: " + imageString);
+
+            return imageString;
+
+        }
+        catch (Exception e){
+            Log.d("ImageString", " image error :: " + e.toString());
+        }
+
+        return null;
 
     }
-
 
 }

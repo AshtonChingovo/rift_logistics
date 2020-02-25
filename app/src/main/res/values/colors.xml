@@ -14,5 +14,8 @@
     <color name="white">#ffffff</color>
 
     <color name="grayOpacity">#80FFFFFF</color>
+    <color name="grayOpacityV2">#1AFFFFFF</color>
+
+    <color name="textDefaultColor">#808080</color>
 
 </resources>

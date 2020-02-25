@@ -18,8 +18,6 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
 
-        <activity android:name=".ui.StockMovements.Transfers.GradeReclassification"/>
-
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.logistics.riftvalley.inventory.android.fileprovider"
@@ -32,7 +30,7 @@
         <!-- Internet Broadcast Receiver -->
         <receiver android:name=".Utilities.InternetBroadcastReceiver.InternetBroadcastReceiver">
             <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
             </intent-filter>
         </receiver>
 
@@ -52,7 +50,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".App.HomeDashboardActivity"
+            android:name=".ui.HomeDashboardActivity"
             android:launchMode="singleTop" />
 
         <meta-data
@@ -61,48 +59,77 @@
 
         <activity
             android:name=".ui.StockMovements.WarehouseLocations_Movements"
-            android:parentActivityName=".App.HomeDashboardActivity" />
+            android:parentActivityName=".ui.HomeDashboardActivity" />
+
         <activity
             android:name=".ui.StockMovements.Movement_Dashboard"
             android:parentActivityName=".ui.StockMovements.WarehouseLocations_Movements" />
+
         <activity
             android:name=".ui.NewInventory.WarehouseName_CodeList"
-            android:parentActivityName=".App.HomeDashboardActivity" />
+            android:parentActivityName=".ui.HomeDashboardActivity" />
         <activity
             android:name=".ui.NewInventory.ScanNewInventory"
             android:parentActivityName=".ui.NewInventory.WarehouseName_CodeList" />
+
         <activity
             android:name=".ui.StockMovements.Sale.SaleLandingPage"
-            android:parentActivityName=".ui.StockMovements.Movement_Dashboard" />
+            android:parentActivityName=".ui.StockMovements.Sale.SalesOrdersView" />
+
         <activity
             android:name=".ui.StockMovements.Transfers.CheckIn"
-            android:parentActivityName=".ui.StockMovements.Movement_Dashboard" />
+            android:parentActivityName=".ui.StockMovements.Transfers.Transfers_LandingPage" />
+
         <activity
             android:name=".ui.StockMovements.Transfers.CheckOut"
-            android:parentActivityName=".ui.StockMovements.Movement_Dashboard" />
+            android:parentActivityName=".ui.StockMovements.Transfers.WarehouseCheckOutLocationsList" />
+
+        <activity android:name=".ui.StockMovements.Transfers.InWarehouse"
+            android:parentActivityName=".ui.StockMovements.Transfers.Transfers_LandingPage" />
+
+        <activity android:name=".ui.StockMovements.Transfers.GradeReclassification"
+            android:parentActivityName=".ui.StockMovements.Transfers.Transfers_LandingPage"/>
+
         <activity
             android:name=".ui.StockMovements.Transfers.Transfers_LandingPage"
             android:parentActivityName=".ui.StockMovements.Movement_Dashboard" />
+
         <activity
             android:name=".ui.StockMovements.ProductionReturn.ProductionReturn"
             android:parentActivityName=".ui.StockMovements.Movement_Dashboard" />
+
         <activity
             android:name=".ui.StockMovements.StockDisposals.StockDisposals"
             android:parentActivityName=".ui.StockMovements.Movement_Dashboard" />
-        <activity android:name=".ui.StockMovements.Sale.Dispatch" />
-        <activity android:name=".ui.StockMovements.Sale.MoveToDispatch" />
-        <activity android:name=".ui.StockMovements.Sale.MoveToFumigation" />
-        <activity android:name=".ui.StockMovements.Transfers.WarehouseCheckOutLocationsList" />
-        <activity android:name=".ui.StockMovements.Transfers.InWarehouse" />
-        <activity android:name=".ui.StockMovements.Transfers.MoveToDispatch" />
+
+        <activity android:name=".ui.StockMovements.Sale.Dispatch"
+            android:parentActivityName=".ui.StockMovements.Sale.SaleLandingPage"/>
+
+        <activity android:name=".ui.StockMovements.Sale.MoveToDispatch"
+            android:parentActivityName=".ui.StockMovements.Sale.SaleLandingPage"/>
+
+        <activity android:name=".ui.StockMovements.Sale.MoveToFumigation"
+            android:parentActivityName=".ui.StockMovements.Sale.SaleLandingPage"/>
+
+        <activity android:name=".ui.StockMovements.Transfers.WarehouseCheckOutLocationsList"
+            android:parentActivityName=".ui.StockMovements.Transfers.CheckOutLandingPage"/>
+
+        <activity android:name=".ui.StockMovements.Transfers.MoveToDispatch"
+            android:parentActivityName=".ui.StockMovements.Transfers.CheckOutLandingPage"/>
+
         <activity
             android:name=".ui.StockMovements.Transfers.CheckOutLandingPage"
-            android:parentActivityName=".ui.StockMovements.Transfers.Transfers_LandingPage" />
-        <activity android:name=".ui.StockMovements.Sale.SalesOrdersView" />
+            android:parentActivityName=".ui.StockMovements.Transfers.Transfers_LandingPage"/>
+
+        <activity android:name=".ui.StockMovements.Sale.SalesOrdersView"
+            android:parentActivityName=".ui.StockMovements.Movement_Dashboard"/>
+
         <activity android:name=".ui.StockMovements.Sale.PicturesPackage.PicturesView" />
+
         <activity android:name=".ui.StockMovements.Sale.PicturesPackage.Caption" />
+
         <activity android:name=".ui.StockMovements.Sale.PicturesPackage.ViewPicture" />
-        <activity android:name=".ui.StockMovements.Sale.PicturesPackage.PicturesList" />
+
         <activity android:name=".App.PicturesNotUploadedList" />
         <activity
             android:name=".Utilities.NoConnection"

@@ -1,4 +1,4 @@
-package com.logistics.riftvalley.App;
+package com.logistics.riftvalley.ui;
 
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -11,13 +11,11 @@ import android.widget.ImageView;
 import com.logistics.riftvalley.ui.StockMovements.WarehouseLocations_Movements;
 import com.logistics.riftvalley.ui.NewInventory.WarehouseName_CodeList;
 import com.logistics.riftvalley.R;
-import com.logistics.riftvalley.data.model.DB.AppDatabase;
 
 public class HomeDashboardActivity extends AppCompatActivity {
 
     CardView newInventory;
     CardView movement;
-    ImageView warningImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

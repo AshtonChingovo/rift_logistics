@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -68,9 +69,9 @@ public class MoveToFumigation extends AppCompatActivity implements _SalesView{
 
         setSupportActionBar(toolbar);
 
-/*        ActionBar actionbar = getSupportActionBar();
+        ActionBar actionbar = getSupportActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true);
-        actionbar.setHomeAsUpIndicator(R.drawable.back);*/
+        actionbar.setHomeAsUpIndicator(R.drawable.back);
 
         toolbar.setTitle("Move To Fumigation");
 

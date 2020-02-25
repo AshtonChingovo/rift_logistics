@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -12,7 +12,7 @@
         android:layout_height="50dp"
         android:background="@color/cardBackground"
         android:gravity="center"
-        android:text="Stack Location"
+        android:text="STACK LOCATION"
         android:textColor="@color/fontColor"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -22,7 +22,7 @@
 
     <EditText
         android:id="@+id/location"
-        android:layout_width="70dp"
+        android:layout_width="150dp"
         android:layout_height="100dp"
         android:layout_marginTop="32dp"
         android:ems="10"
@@ -74,6 +74,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
+            android:textColor="@android:color/tab_indicator_text"
             android:text="OVERFLOW"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -84,6 +85,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="16dp"
+            android:textColor="@android:color/tab_indicator_text"
             android:text="RECEIVING AREA"
             android:textSize="18sp"
             android:textStyle="bold" />

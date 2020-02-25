@@ -3,6 +3,7 @@ package com.logistics.riftvalley.ui.StockMovements.Transfers;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
@@ -24,6 +25,7 @@ public class Transfers_LandingPage extends AppCompatActivity implements InterWar
         super.onCreate(savedInstanceState);
         setContentView(R.layout.transfers_landing_page);
 
+        toolbar = findViewById(R.id.toolbar);
         interWarehouseMovementCard = findViewById(R.id.interWareHouseMovementCard);
         inWarehouseMovementCard = findViewById(R.id.inWarehouseMovement);
         gradeTransferCard = findViewById(R.id.gradeTransferCard);
@@ -56,11 +58,11 @@ public class Transfers_LandingPage extends AppCompatActivity implements InterWar
             }
         });
 
-/*        setSupportActionBar(toolbar);
+        setSupportActionBar(toolbar);
 
         ActionBar actionbar = getSupportActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true);
-        actionbar.setHomeAsUpIndicator(R.drawable.back); */
+        actionbar.setHomeAsUpIndicator(R.drawable.back);
 
     }
 

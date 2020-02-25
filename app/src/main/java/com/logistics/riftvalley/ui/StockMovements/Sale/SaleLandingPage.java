@@ -77,28 +77,12 @@ public class SaleLandingPage extends AppCompatActivity {
             }
         });
 
-
         setSupportActionBar(toolbar);
 
         ActionBar actionbar = getSupportActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setHomeAsUpIndicator(R.drawable.back);
 
-
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-
-        //getMenuInflater().inflate(R.menu.take_pictures, menu);
-
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        return true;
-
-    }
 }

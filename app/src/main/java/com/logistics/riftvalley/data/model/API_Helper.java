@@ -2,10 +2,10 @@ package com.logistics.riftvalley.data.model;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.support.constraint.ConstraintLayout;
 import android.util.Log;
 import com.logistics.riftvalley.Retrofit.RetrofitInstance;
 import com.logistics.riftvalley.Utilities.SharedPreferences.SharedPreferencesClass;
+import com.logistics.riftvalley.Utilities.UploadPictures.InternetBroadcastReceiver;
 import com.logistics.riftvalley.data.DataManager;
 import com.logistics.riftvalley.data._DataManager;
 import com.logistics.riftvalley.data.model.DB.AppDatabase;
@@ -844,6 +844,9 @@ public class API_Helper implements _API_Helper {
             PicturesDao picturesDao = AppDatabase.getDatabase(context).picturesDao();
 
             for(PicturesDB picture : pictures){
+
+                // Log.d("ImageString", " API HELPER path :: " + picture.getUri());
+
                 if(picture.getId() == 0)
                     insertOps = picturesDao.insertOnePicture(picture);
                 else
@@ -858,6 +861,7 @@ public class API_Helper implements _API_Helper {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             dataManager.isPicturesOperationSuccessful(insertOps > 0 || updateOps > 0, 0);
+            InternetBroadcastReceiver.StartReportUploading(context);
         }
     }
 

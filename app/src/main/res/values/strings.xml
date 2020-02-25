@@ -16,4 +16,7 @@
     <string name="salesOrderCustomerNameSharedPreferences">salesOrderCustomerName</string>
     <string name="docEntryNumber">docEntryNumber</string>
 
+    <string name="newStockDescription">This refers to new stock coming in from TPZ into a NT warehouse</string>
+    <string name="stockMovementsDescription">Handles stock movements within NT warehouses</string>
+
 </resources>

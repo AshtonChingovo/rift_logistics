@@ -5,8 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.constraint.ConstraintLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -28,6 +30,8 @@ import java.util.Map;
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.*;
 
 public class GradeReclassification extends AppCompatActivity implements _GradeReclassificationView, AdapterView.OnItemSelectedListener{
+
+    Toolbar toolbar;
 
     ConstraintLayout oldBarcodeConstraintLayout;
     ConstraintLayout newBarcodeConstraintLayout;
@@ -84,6 +88,7 @@ public class GradeReclassification extends AppCompatActivity implements _GradeRe
         // get list of lot numbers and grades
         transfersPresenter.getLotNumberList();
 
+        toolbar = findViewById(R.id.toolbar);
         oldBarcodeConstraintLayout = findViewById(R.id.oldBarcodeConstraintLayout);
         newBarcodeConstraintLayout = findViewById(R.id.newBarcodeConstraintLayout);
         oldBarcodeString = findViewById(R.id.oldBarcodeString);
@@ -104,6 +109,12 @@ public class GradeReclassification extends AppCompatActivity implements _GradeRe
         newBarcodeProgressBar.setVisibility(View.INVISIBLE);
         processingProgressBar.setVisibility(View.INVISIBLE);
         processButton.setEnabled(false);
+
+        setSupportActionBar(toolbar);
+
+        ActionBar actionbar = getSupportActionBar();
+        actionbar.setDisplayHomeAsUpEnabled(true);
+        actionbar.setHomeAsUpIndicator(R.drawable.back);
 
         oldBarcodeConstraintLayout.setOnClickListener(new View.OnClickListener() {
             @Override

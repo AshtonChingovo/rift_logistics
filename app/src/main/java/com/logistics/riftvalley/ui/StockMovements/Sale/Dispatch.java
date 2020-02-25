@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.DialogFragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -76,13 +77,10 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
 
         setSupportActionBar(toolbar);
 
-/*
-        setSupportActionBar(toolbar);
-
         ActionBar actionbar = getSupportActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setHomeAsUpIndicator(R.drawable.back);
-*/
+
 
         // initialize view in Presenter
         salesPresenter.initializeView(this);
@@ -310,14 +308,18 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
     public boolean onOptionsItemSelected(MenuItem item) {
         super.onOptionsItemSelected(item);
 
-        if(barcodes.size() != SharedPreferencesClass.getSalesOrderQuantity()){
-            Toast.makeText(this, SharedPreferencesClass.getSalesOrderQuantity() + " required to Dispatch" , Toast.LENGTH_SHORT).show();
-            return true;
-        }
+        if(item.getItemId() == android.R.id.home)
+            finish();
+        else{
+            if(barcodes.size() != SharedPreferencesClass.getSalesOrderQuantity()){
+                Toast.makeText(this, SharedPreferencesClass.getSalesOrderQuantity() + " required to Dispatch" , Toast.LENGTH_SHORT).show();
+                return true;
+            }
 
-        if(barcodes.size() > 0){
-            DialogFragment dialog = new DispatchDialog();
-            dialog.show(getSupportFragmentManager(), "Dialog");
+            if(barcodes.size() > 0){
+                DialogFragment dialog = new DispatchDialog();
+                dialog.show(getSupportFragmentManager(), "Dialog");
+            }
         }
 
         return true;

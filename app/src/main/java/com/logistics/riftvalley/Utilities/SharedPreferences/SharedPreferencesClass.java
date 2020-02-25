@@ -28,9 +28,7 @@ public class SharedPreferencesClass {
     }
 
     public static String getCookie(){
-
         return sharedPref.getString(context.getString(R.string.cookieSharedPreferences), null);
-
     }
 
     public static boolean writeCookie(String responseVal){
