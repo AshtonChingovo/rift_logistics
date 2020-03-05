@@ -107,7 +107,7 @@ public class MoveToDispatch extends AppCompatActivity implements _TransfersView{
                 // write the aisle code to the SharePreference
                 SharedPreferencesClass.writeStackLocation(DISPATCH_AREA_CODE);
 
-                transfersPresenter.requestSystemNumber(intent.getStringExtra(SCAN_BARCODE1), null, MOVE_TO_DISPATCH_ACTIVITY);
+                transfersPresenter.requestSystemNumber(intent.getStringExtra(SCAN_BARCODE1), null, MOVE_TO_DISPATCH_TRANSFERS_ACTIVITY);
 
             }
         };

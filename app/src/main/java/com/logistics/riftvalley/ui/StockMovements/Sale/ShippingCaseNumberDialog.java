@@ -1,8 +1,11 @@
 package com.logistics.riftvalley.ui.StockMovements.Sale;
 
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
@@ -14,11 +17,15 @@ import com.logistics.riftvalley.R;
 
 public class ShippingCaseNumberDialog extends DialogFragment {
 
-    String barcodeNumber;
+    String serialNumber;
+
     TextView heading;
     TextView barcode;
     TextView stackLocation;
     ScanDialog mListener;
+
+    IntentFilter mFilter;
+    BroadcastReceiver mReceiver;
 
     @NonNull
     @Override
@@ -29,24 +36,39 @@ public class ShippingCaseNumberDialog extends DialogFragment {
         View view = getActivity().getLayoutInflater().inflate(R.layout.scan_dialog, null);
 
         heading = view.findViewById(R.id.heading);
-        barcode = view.findViewById(R.id.warehouseName);
+        barcode = view.findViewById(R.id.barcode);
         stackLocation = view.findViewById(R.id.location);
 
-        heading.setText("Shipping Case Number");
-        barcodeNumber = getArguments().getString("barcode");
-
-        barcode.setText(barcodeNumber);
-
-        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+        final AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
         dialog.setView(view)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        if(!stackLocation.getText().toString().equals(""))
-                            mListener.ScanDialogOkClicked(barcodeNumber, stackLocation.getText().toString());
+                        mListener.ScanDialogOkClicked(getArguments().getString("barcode"), serialNumber);
+                        dismiss();
                     }
                 });
+
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                if(intent.getStringExtra("SCAN_BARCODE1") == null){
+                    serialNumber = null;
+                    return;
+                }
+                else{
+
+                    serialNumber = intent.getStringExtra("SCAN_BARCODE1");
+
+                    barcode.setText(serialNumber);
+
+                }
+            }
+        };
+
+        mFilter = new IntentFilter("nlscan.action.SCANNER_RESULT");
+        getActivity().registerReceiver(mReceiver, mFilter);
 
         return dialog.create();
 

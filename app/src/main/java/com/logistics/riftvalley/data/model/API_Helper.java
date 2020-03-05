@@ -144,8 +144,8 @@ public class API_Helper implements _API_Helper {
     }
 
     @Override
-    public void doesSerialNumberExistInSAP(String serialNumber) {
-        new FindSerialNumberSAP().execute(serialNumber);
+    public void doesSerialNumberExistInSAP(String serialNumber, String shippingLabelBarcode) {
+        new FindSerialNumberSAP().execute(serialNumber, shippingLabelBarcode);
     }
 
     @Override
@@ -159,7 +159,7 @@ public class API_Helper implements _API_Helper {
     }
 
     @Override
-    public void dispatchProcesses(boolean isSuccessful, String message) {
+    public void dispatchProcesses(boolean isSuccessful, String message, JSONArray serialNumberResponse) {
 
     }
 
@@ -169,7 +169,8 @@ public class API_Helper implements _API_Helper {
     }
 
     @Override
-    public void dispatchGoods(List<SalesOrdersDocumentLines> documentLines) {
+    public void dispatchGoods(List<SalesOrdersDocumentLines> documentLines, Context context) {
+        this.context = context;
         new CreateDeliveryNote().execute(documentLines);
     }
 
@@ -235,6 +236,17 @@ public class API_Helper implements _API_Helper {
     public void deleteImage(PicturesDB picture) {
         this.picture = picture;
         new DeletePicture().execute();
+    }
+
+    @Override
+    public void haveDispatchPicturesBeenTaken(Context context) {
+        this.context = context;
+        new GetDispatchPictures().execute();
+    }
+
+    @Override
+    public void dispatchPicturesHaveBeenTaken(boolean dispatchPicturesTaken) {
+
     }
 
     public class LoginToSAP extends AsyncTask<Login, Void, Void> {
@@ -351,8 +363,12 @@ public class API_Helper implements _API_Helper {
                     // set the serial number id
                     SERIAL_NUMBER_ID = jsonArray.getJSONObject(0).getInt("DocEntry");
 
-                    systemNumber = Integer.parseInt(downloadedSystemNumber);
+                    // if the array is empty then return
+                    if(jsonArray.length() == 0){
+                        return null;
+                    }
 
+                    systemNumber = Integer.parseInt(downloadedSystemNumber);
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -393,10 +409,17 @@ public class API_Helper implements _API_Helper {
             downloadedSystemNumber = RetrofitInstance.getCartonSystemNumber(SharedPreferencesClass.getCookie(), values[0]);
 
             if(downloadedSystemNumber != null){
+
                 try {
 
                     jsonObject = new JSONObject(downloadedSystemNumber);
                     jsonArray = jsonObject.getJSONArray("value");
+
+                    Log.d("BinLocationAbsEntry", " length :: " + jsonArray.length());
+
+                    // if array is empty leave
+                    if(jsonArray.length() == 0)
+                        return null;
 
                     // Extract scanned carton's system number
                     downloadedSystemNumber = jsonArray.getJSONObject(0).get("SystemNumber").toString();
@@ -407,7 +430,7 @@ public class API_Helper implements _API_Helper {
                     // set the serial number id
                     SERIAL_NUMBER_ID = jsonArray.getJSONObject(0).getInt("DocEntry");
 
-                    if(jsonArray.length() != 0){
+                    if(jsonArray.length() > 0){
 
                         Log.d("BinLocationAbsEntry", " location " + SharedPreferencesClass.getStackLocation());
 
@@ -451,7 +474,7 @@ public class API_Helper implements _API_Helper {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            if(Integer.parseInt(downloadedSystemNumber) > 0)
+            if(systemNumber > 0)
                 dataManager.returnSerialNumberSAPSystemNumberWithBinLocationAbsEntry(systemNumber, binLocationAbsEntryNumber);
             else
                 dataManager.returnSerialNumberSAPSystemNumberWithBinLocationAbsEntry(0, binLocationAbsEntryNumber);
@@ -469,6 +492,12 @@ public class API_Helper implements _API_Helper {
 
             // transfer stock
             stockTransferResponse = RetrofitInstance.stockTransfer(SharedPreferencesClass.getCookie(), stockTransferObject[0]);
+
+            // if transfer fails exit
+            if(!stockTransferResponse){
+                patchSerialNumberDetails = false;
+                return null;
+            }
 
             // patch the serial # details
             patchSerialNumberDetails = RetrofitInstance.patchSerialNumberDetails(
@@ -563,9 +592,11 @@ public class API_Helper implements _API_Helper {
                     for(int i = 0; i < jsonArray.length(); i++){
 
                         JSONObject deliveryNoteObject = jsonArray.getJSONObject(i).getJSONObject("DeliveryNotes");
+                        JSONObject deliveryNoteDocumentLines = jsonArray.getJSONObject(i).getJSONObject("DeliveryNotes/DocumentLines");
 
                         DeliveryNote deliveryNote = new DeliveryNote(deliveryNoteObject.getString("CardName"),
-                                deliveryNoteObject.getInt("DocEntry"));
+                                deliveryNoteObject.getInt("DocEntry"),
+                                deliveryNoteDocumentLines.get("BaseEntry") != null ? deliveryNoteDocumentLines.getInt("BaseEntry") : 0);
 
                         deliveryNote.setTotalUploaded(picturesDao.getPicturesUploadedCount(deliveryNote.getDocEntry()));
                         deliveryNote.setTotalPictures(picturesDao.getPicturesSavedTotal(deliveryNote.getDocEntry()));
@@ -597,11 +628,16 @@ public class API_Helper implements _API_Helper {
 
     public class FindSerialNumberSAP extends AsyncTask<String, Void, Void> {
 
-        String OKAY = "OKAY";
+        String PATCH_FAILED = "Sorry, failed to attach the shipping label";
         String EXISTS = "Serial Number not found in the system";
+        String FAILED = "Sorry, operation failed";
+
+        String message;
 
         JSONArray serialNumberResponse;
         JSONObject jsonResponse;
+
+        boolean isSuccessful;
 
         @Override
         protected Void doInBackground(String... values) {
@@ -610,10 +646,29 @@ public class API_Helper implements _API_Helper {
 
                 // value[0] = serialNumber
                 jsonResponse = new JSONObject(RetrofitInstance.getSerialNumber(SharedPreferencesClass.getCookie(), values[0]));
+
                 serialNumberResponse = jsonResponse.getJSONArray("value");
+
+                // value[1] = shippingLabelBarcode
+                if(serialNumberResponse.length() > 0 && values[1] != null){
+                    // patch the shipping label to the TPZ serial number
+                    if(RetrofitInstance.setShippingCaseNumber(SharedPreferencesClass.getCookie(), values[0], values[1]))
+                        isSuccessful = true;
+                    else{
+                        message = PATCH_FAILED;
+                        isSuccessful = false;
+                        return null;
+                    }
+                }
+                else{
+                    isSuccessful = false;
+                    message = EXISTS;
+                    return null;
+                }
 
             } catch (JSONException e) {
                 e.printStackTrace();
+                message = FAILED;
             }
 
             return null;
@@ -623,21 +678,21 @@ public class API_Helper implements _API_Helper {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            dataManager.dispatchProcesses(serialNumberResponse.length() > 0, serialNumberResponse.length() > 0 ? OKAY : EXISTS);
+            dataManager.dispatchProcesses(isSuccessful, message, serialNumberResponse);
         }
     }
 
     public class AssignShippingCaseNumber extends AsyncTask<String, Void, Void>{
 
-        JSONArray serialNumberResponse = null;
         JSONObject jsonResponse = null;
+        JSONArray serialNumberResponse = null;
 
         boolean isSuccessful;
 
         @Override
         protected Void doInBackground(String... data) {
 
-            isSuccessful = RetrofitInstance.setShippingCaseNumber(SharedPreferencesClass.getCookie(), data[0], Integer.valueOf(data[1].trim()));
+            isSuccessful = RetrofitInstance.setShippingCaseNumber(SharedPreferencesClass.getCookie(), data[0], data[1].trim());
 
             if(isSuccessful){
 
@@ -668,12 +723,49 @@ public class API_Helper implements _API_Helper {
     // create DeliveryNote and close Sales order
     public class CreateDeliveryNote extends AsyncTask<List<SalesOrdersDocumentLines>, Void, Void> {
 
-        boolean deliveryCreated;
+        JSONObject jsonResponse = null;
+        JSONArray deliveryCreatedJson;
+        String deliveryCreated;
+
+        int docEntryNumber = 0;
+
+        int dbUpdateResponse = 0;
 
         @Override
         protected Void doInBackground(List<SalesOrdersDocumentLines>... salesOrdersDocumentLines) {
 
             deliveryCreated = RetrofitInstance.createDeliveryNote(SharedPreferencesClass.getCookie(), new DeliveryDocument(SharedPreferencesClass.getSalesOrderCardCode(), salesOrdersDocumentLines[0]));
+
+            // get the delivery note docEntry # and update the pictures in the DB and set the current delivery note # to be of the created delivery note
+            if(deliveryCreated != null){
+
+                try {
+
+/*                    jsonResponse = new JSONObject(deliveryCreated);
+
+                    deliveryCreatedJson = jsonResponse.ge("value");*/
+
+                    // get the delivery note doc entry
+                    docEntryNumber = jsonResponse.getJSONArray(DOCUMENT_LINES).getJSONObject(0).getInt(DOC_ENTRY);
+
+                    Log.d("DeliveryNoteSAP", " ::: docEntry# ::: " + docEntryNumber);
+
+                    // set the docEntry in the SharedPreferences
+                    SharedPreferencesClass.writeDocEntryNumber(docEntryNumber);
+
+                    // update the pictures in the DB with the docEntry #
+                    PicturesDao picturesDao = AppDatabase.getDatabase(context).picturesDao();
+
+                    dbUpdateResponse = picturesDao.updatePictureDeliveryNoteNumber(docEntryNumber, SharedPreferencesClass.getSalesOrderDocEntry());
+
+                    Log.d("DeliveryNoteSAP", " :: dbUpdateResponse# :: " + dbUpdateResponse);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.d("DeliveryNoteSAP", " :: ERROR # :: " + e.toString());
+                }
+
+            }
 
             return null;
 
@@ -682,7 +774,7 @@ public class API_Helper implements _API_Helper {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            dataManager.dispatchGoodsResponse(deliveryCreated, "");
+            // dataManager.dispatchGoodsResponse(deliveryCreated, "");
         }
     }
 
@@ -782,6 +874,7 @@ public class API_Helper implements _API_Helper {
         }
     }
 
+
     /*
     *   PicturesView
     * */
@@ -792,7 +885,10 @@ public class API_Helper implements _API_Helper {
 
             PicturesDao picturesDao = AppDatabase.getDatabase(context).picturesDao();
 
-            pictures = picturesDao.getPicturesTakenAlready(SharedPreferencesClass.getDocEntryNumber());
+            if(SharedPreferencesClass.getDocEntryNumber() == 0)
+                pictures = picturesDao.getPicturesTakenAlreadyUsingDeliveryNoteDocEntry(SharedPreferencesClass.getSalesOrderDocEntry());
+            else
+                pictures = picturesDao.getPicturesTakenAlreadyUsingDeliveryNoteAndSalesOrderDocEntry(SharedPreferencesClass.getSalesOrderDocEntry(), SharedPreferencesClass.getSalesOrderDocEntry());
 
             return null;
 
@@ -881,6 +977,28 @@ public class API_Helper implements _API_Helper {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
+        }
+    }
+
+    public class GetDispatchPictures extends AsyncTask<Void, Void, Void> {
+
+        int picturesCount;
+
+        @Override
+        protected Void doInBackground(Void... aVoid) {
+
+            PicturesDao picturesDao = AppDatabase.getDatabase(context).picturesDao();
+
+            picturesCount = picturesDao.getDispatchPicturesCount(SharedPreferencesClass.getSalesOrderDocEntry());
+
+            return null;
+
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            dataManager.dispatchPicturesHaveBeenTaken(picturesCount > 0);
         }
     }
 

@@ -54,18 +54,18 @@ public interface _API_Helper {
 
     void deliveryNotesResponse(List<DeliveryNote> deliveryNotesList);
 
-    void doesSerialNumberExistInSAP(String serialNumber);
+    void doesSerialNumberExistInSAP(String serialNumber, String shippingLabelBarcode);
 
     void setShippingCaseNumberToSerialNumber(String serialNumber, String shippingCaseNumber);
 
     void salesOrderDispatch(boolean isSuccessful);
 
     // returns results for dispatch processes from SAP
-    void dispatchProcesses(boolean isSuccessful, String message);
+    void dispatchProcesses(boolean isSuccessful, String message, JSONArray serialNumberResponse);
 
     void shippingCaseNumber(boolean isSuccessful, String message, JSONArray jsonArray);
 
-    void dispatchGoods(List<SalesOrdersDocumentLines> documentLines);
+    void dispatchGoods(List<SalesOrdersDocumentLines> documentLines, Context context);
 
     void dispatchGoodsResponse(boolean isSuccessful, String message);
 
@@ -76,7 +76,8 @@ public interface _API_Helper {
 
     void returnLotNumbers(String lotNumberJson);
 
-    void reclassifyGrade(com.logistics.riftvalley.data.model.StockDisposals.DocumentLines documentLines, com.logistics.riftvalley.data.model.GoodReceipt.DocumentLines documentLinesGoodsReceipt);
+    void reclassifyGrade(com.logistics.riftvalley.data.model.StockDisposals.DocumentLines documentLines,
+                         com.logistics.riftvalley.data.model.GoodReceipt.DocumentLines documentLinesGoodsReceipt);
 
     void reclassifyResult(boolean isSuccessful);
 
@@ -94,5 +95,9 @@ public interface _API_Helper {
     void isPicturesOperationSuccessful(boolean isSuccessful, int operationId);
 
     void deleteImage(PicturesDB picture);
+
+    void haveDispatchPicturesBeenTaken(Context context);
+
+    void dispatchPicturesHaveBeenTaken(boolean dispatchPicturesTaken);
 
 }

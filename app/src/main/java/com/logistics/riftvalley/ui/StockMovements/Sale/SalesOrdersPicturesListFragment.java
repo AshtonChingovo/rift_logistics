@@ -124,7 +124,7 @@ public class SalesOrdersPicturesListFragment extends Fragment implements _SalesV
     }
 
     @Override
-    public void dispatchProcessResponse(boolean isSuccessful, String message, String operationSource) {
+    public void dispatchProcessResponse(boolean isSuccessful, String message, SalesOrderDocumentLinesSerialNumbers salesOrderDocumentLinesSerialNumbers) {
 
     }
 
@@ -172,6 +172,8 @@ public class SalesOrdersPicturesListFragment extends Fragment implements _SalesV
 
                     SharedPreferencesClass.writeDocEntryNumber(
                             deliveryNoteList.get(getAdapterPosition()).getDocEntry());
+
+                    SharedPreferencesClass.writeSalesOrderDocEntryNumber(deliveryNoteList.get(getAdapterPosition()).getBaseEntry());
 
                     Intent intent = new Intent(getActivity(), PicturesView.class);
                     startActivity(intent);

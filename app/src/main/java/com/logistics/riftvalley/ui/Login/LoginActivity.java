@@ -197,42 +197,4 @@ public class LoginActivity extends AppCompatActivity implements _LoginActivityVi
 
     }
 
-    public class LoginSAP extends AsyncTask<Login, Void, Void> {
-
-        String responseVal;
-        boolean isLoggedIn = false;
-
-        @Override
-        protected Void doInBackground(Login... values) {
-
-            responseVal = RetrofitInstance.login(values[0]);
-
-            if(responseVal != null){
-                if(SharedPreferencesClass.writeCookie(responseVal)){
-                    isLoggedIn = true;
-                    SharedPreferencesClass.writeCredentials(username.getText().toString(), password.getText().toString(), COMPANY_DB);
-                    return null;
-                }
-            }
-
-            isLoggedIn = false;
-
-            return null;
-
-        }
-
-        @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            if(isLoggedIn){
-
-            }
-            else{
-
-            }
-        }
-
-    }
-
 }

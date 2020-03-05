@@ -22,8 +22,14 @@ public interface PicturesDao {
     @Update
     int updatePicture(PicturesDB picture);
 
-    @Query("SELECT * FROM salesPictures WHERE docEntry = :docEntry ORDER BY id DESC")
-    List<PicturesDB> getPicturesTakenAlready(int docEntry);
+    @Query("UPDATE salesPictures SET deliveryNoteDocEntry = :deliveryNoteDocEntry WHERE salesOrderDocEntry = :salesDocEntry")
+    int updatePictureDeliveryNoteNumber(int salesDocEntry, int deliveryNoteDocEntry);
+
+    @Query("SELECT * FROM salesPictures WHERE salesOrderDocEntry = :docEntry ORDER BY id DESC")
+    List<PicturesDB> getPicturesTakenAlreadyUsingDeliveryNoteDocEntry(int docEntry);
+
+    @Query("SELECT * FROM salesPictures WHERE deliveryNoteDocEntry = :docEntry AND salesOrderDocEntry = :salesOrderDocEntry ORDER BY id DESC")
+    List<PicturesDB> getPicturesTakenAlreadyUsingDeliveryNoteAndSalesOrderDocEntry(int docEntry, int salesOrderDocEntry);
 
     @Delete
     void deletePicture(PicturesDB picture);
@@ -31,10 +37,13 @@ public interface PicturesDao {
     @Query("SELECT * FROM salesPictures WHERE uploaded = 0 AND saved = 1 ORDER BY id DESC")
     List<PicturesDB> getPicturesNotUploaded();
 
-    @Query("SELECT COUNT(uploaded) FROM salesPictures WHERE docEntry = :docEntry AND uploaded = 1")
+    @Query("SELECT COUNT(uploaded) FROM salesPictures WHERE deliveryNoteDocEntry = :docEntry AND uploaded = 1")
     int getPicturesUploadedCount(int docEntry);
 
-    @Query("SELECT COUNT(uploaded) FROM salesPictures WHERE docEntry = :docEntry AND saved = 1")
+    @Query("SELECT COUNT(uploaded) FROM salesPictures WHERE deliveryNoteDocEntry = :docEntry AND saved = 1")
     int getPicturesSavedTotal(int docEntry);
+
+    @Query("SELECT COUNT(saved) FROM salesPictures WHERE salesOrderDocEntry = :docEntry AND saved = 1")
+    int getDispatchPicturesCount(int docEntry);
 
 }

@@ -11,7 +11,9 @@ public class PicturesDB {
     @NonNull
     private int id;
     @NonNull
-    private int docEntry;
+    private int deliveryNoteDocEntry;
+    @NonNull
+    private int salesOrderDocEntry;
     @NonNull
     private String uri;
     @NonNull
@@ -22,8 +24,10 @@ public class PicturesDB {
     private int uploaded;
     private String base64String;
 
-    public PicturesDB(int docEntry, @NonNull String uri, @NonNull String date, int saved, int uploaded) {
-        this.docEntry = docEntry;
+    public PicturesDB(int deliveryNoteDocEntry, int salesOrderDocEntry, @NonNull String uri, @NonNull String date,
+                      int saved, int uploaded) {
+        this.deliveryNoteDocEntry = deliveryNoteDocEntry;
+        this.salesOrderDocEntry = salesOrderDocEntry;
         this.uri = uri;
         this.date = date;
         this.saved = saved;
@@ -38,12 +42,12 @@ public class PicturesDB {
         this.id = id;
     }
 
-    public int getDocEntry() {
-        return docEntry;
+    public int getDeliveryNoteDocEntry() {
+        return deliveryNoteDocEntry;
     }
 
-    public void setDocEntry(int docEntry) {
-        this.docEntry = docEntry;
+    public void setDeliveryNoteDocEntry(int deliveryNoteDocEntry) {
+        this.deliveryNoteDocEntry = deliveryNoteDocEntry;
     }
 
     @NonNull
@@ -88,4 +92,11 @@ public class PicturesDB {
         this.base64String = base64String;
     }
 
+    public int getSalesOrderDocEntry() {
+        return salesOrderDocEntry;
+    }
+
+    public void setSalesOrderDocEntry(int salesOrderDocEntry) {
+        this.salesOrderDocEntry = salesOrderDocEntry;
+    }
 }

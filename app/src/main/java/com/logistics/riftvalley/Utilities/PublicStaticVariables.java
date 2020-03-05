@@ -18,6 +18,7 @@ public class PublicStaticVariables {
     public static final int MOVE_TO_FUMIGATION_SALES = 11;
     public static final int MOVE_TO_DISPATCH_SALES = 12;
     public static final int GRADE_RECLASSIFICATION = 13;
+    public static final int MOVE_TO_DISPATCH_TRANSFERS_ACTIVITY = 14;
 
     // serial number SAP B1 item code
     public static String ITEM_CODE = "";
@@ -54,9 +55,13 @@ public class PublicStaticVariables {
     * */
     public static String WAREHOUSE_CODE = "code";
     public static String WAREHOUSE_NAME = "warehouseName";
+    public static String DISPATCH_PICTURES = "dispatchPictures";
 
     public static int SERIAL_AND_BATCH_NUMBER_BASELINE = 0;
 
     public static String RECEIVING_AREA_STRING = "RECEIVING AREA";
+
+    public static String DOC_ENTRY = "DocEntry";
+    public static String DOCUMENT_LINES = "DocumentLines";
 
 }

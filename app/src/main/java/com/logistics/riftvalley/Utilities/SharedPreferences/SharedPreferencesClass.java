@@ -110,8 +110,14 @@ public class SharedPreferencesClass {
         return sharedPref.getString(context.getString(R.string.salesOrderCustomerNameSharedPreferences), null);
     }
 
+    public static void writeSalesOrderDocEntryNumber(int docEntry){
 
-    // set and get docEntry number
+        editor.putInt(context.getString(R.string.salesOrderDocEntrySharedPreferences), docEntry);
+        editor.apply();
+
+    }
+
+    // set and get delivery note docEntry number
     public static void writeDocEntryNumber(int docEntry){
 
         editor.putInt(context.getString(R.string.docEntryNumber), docEntry);

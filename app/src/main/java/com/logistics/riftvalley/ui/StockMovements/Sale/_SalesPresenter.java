@@ -9,12 +9,15 @@ import com.logistics.riftvalley.data.model.SalesOrder.SalesOrderList;
 import org.json.JSONArray;
 
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public interface _SalesPresenter {
 
     void initializeView(_SalesView salesView);
 
     void initializeView(_PicturesView picturesView);
+
+    void initializeView(_SalesLandingPageView salesLandingPageView);
 
     void requestSalesOrdersList();
 
@@ -24,7 +27,7 @@ public interface _SalesPresenter {
 
     void moveToDispatch(String serialNumber, String warehouseCode, int source);
 
-    void dispatchGoods(List<SalesOrderDocumentLinesSerialNumbers> documentLines);
+    void dispatchGoods(List<SalesOrderDocumentLinesSerialNumbers> documentLines, Context context);
 
     void success(boolean isSuccessful);
 
@@ -32,13 +35,13 @@ public interface _SalesPresenter {
 
     void deliveryNotesList(List<DeliveryNote> deliveryNotesList);
 
-    void doesSerialNumberExistInSAP(String serialNumber, String operationSource);
+    void doesSerialNumberExistInSAP(String serialNumber, String shippingLabelBarcode, String operationSource);
 
     void setShippingCaseNumberForSerialNumberSAP(String serialNumber, String shippingCaseNumber);
 
-    void dispatchProcessesRequests(boolean isSuccessful, String message);
+    void dispatchProcessesRequests(boolean isSuccessful, String message, JSONArray jsonArray);
 
-    void dispatchGoodsResponse(boolean isSuccessful, String message);
+    void dispatchGoodsResponse(boolean isSuccessful, String message, JSONArray jsonArray);
 
     void shippingCaseNumber(boolean isSuccessful, String message, JSONArray jsonArray);
 
@@ -59,4 +62,9 @@ public interface _SalesPresenter {
     void isUpdatePicturesSuccessful(boolean isUpdatePicturesSuccessful);
 
     void delete(PicturesDB picture);
+
+    void haveDispatchPicturesBeenTaken(Context context);
+
+    void dispatchPicturesHaveBeenTaken(boolean dispatchPicturesHaveBeenTaken);
+
 }

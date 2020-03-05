@@ -14,7 +14,7 @@ public interface _SalesView {
 
     void deliveryNotesList(List<DeliveryNote> deliveryNoteList);
 
-    void dispatchProcessResponse(boolean isSuccessful, String message, String operationSource);
+    void dispatchProcessResponse(boolean isSuccessful, String message, SalesOrderDocumentLinesSerialNumbers salesOrderDocumentLinesSerialNumbers);
 
     void dispatchGoodsResponse(boolean isSuccessful, String message);
 

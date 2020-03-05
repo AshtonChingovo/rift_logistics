@@ -123,7 +123,7 @@ public class SalesOrdersListFragment extends Fragment implements _SalesView{
     }
 
     @Override
-    public void dispatchProcessResponse(boolean isSuccessful, String message, String operationSource) {
+    public void dispatchProcessResponse(boolean isSuccessful, String message, SalesOrderDocumentLinesSerialNumbers salesOrderDocumentLinesSerialNumbers) {
 
     }
 
@@ -168,6 +168,9 @@ public class SalesOrdersListFragment extends Fragment implements _SalesView{
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+
+                    // set the active delivery note docEntry to zero
+                    SharedPreferencesClass.writeDocEntryNumber(0);
 
                     SharedPreferencesClass.writeSalesOrderData(
                             salesOrderLists.get(getAdapterPosition()).getCardCode(),

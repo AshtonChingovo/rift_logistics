@@ -4,13 +4,16 @@ public class DeliveryNote {
 
     String cardName;
     int docEntry;
+    // sales orderNumber
+    int baseEntry;
 
     private int totalUploaded;
     private int totalPictures;
 
-    public DeliveryNote(String cardName, int docEntry) {
+    public DeliveryNote(String cardName, int docEntry, int baseEntry) {
         this.cardName = cardName;
         this.docEntry = docEntry;
+        this.baseEntry = baseEntry;
     }
 
     public String getCardName() {
@@ -43,5 +46,13 @@ public class DeliveryNote {
 
     public void setTotalPictures(int totalPictures) {
         this.totalPictures = totalPictures;
+    }
+
+    public int getBaseEntry() {
+        return baseEntry;
+    }
+
+    public void setBaseEntry(int baseEntry) {
+        this.baseEntry = baseEntry;
     }
 }

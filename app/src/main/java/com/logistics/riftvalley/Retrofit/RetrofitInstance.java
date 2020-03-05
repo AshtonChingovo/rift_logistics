@@ -408,7 +408,7 @@ public class RetrofitInstance {
 
     }
 
-    public static Boolean setShippingCaseNumber(String cookie, String serialNumber, int shippingCaseNumber){
+    public static Boolean setShippingCaseNumber(String cookie, String serialNumber, String shippingCaseNumber){
 
         /*
         *   1. Get carton DocEntry
@@ -485,7 +485,7 @@ public class RetrofitInstance {
 
     }
 
-    public static boolean createDeliveryNote(String cookie, DeliveryDocument deliveryDocument){
+    public static String createDeliveryNote(String cookie, DeliveryDocument deliveryDocument){
 
         RetrofitAPI retrofitAPI = getRetrofit().create(RetrofitAPI.class);
 
@@ -496,16 +496,16 @@ public class RetrofitInstance {
             response = retrofitGET.execute();
 
             if(response.isSuccessful() && response.code() == 201)
-                return true;
+                return response.body().toString();
             else
-                return false;
+                return null;
 
         } catch (Exception e) {
             e.printStackTrace();
             Log.i("ScanningProcess", "setShippingCaseNumber Error: " + e.toString());
         }
 
-        return false;
+        return null;
 
     }
 

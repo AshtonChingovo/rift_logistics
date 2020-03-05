@@ -32,22 +32,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.work.Constraints;
-import androidx.work.ExistingWorkPolicy;
-import androidx.work.NetworkType;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkManager;
-
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.logistics.riftvalley.R;
 import com.logistics.riftvalley.Utilities.SharedPreferences.SharedPreferencesClass;
-import com.logistics.riftvalley.Utilities.UploadPictures.Uploads;
-import com.logistics.riftvalley.data.model.DB.AppDatabase;
-import com.logistics.riftvalley.data.model.Dao.PicturesDao;
 import com.logistics.riftvalley.Utilities.ExitDialog;
-import com.logistics.riftvalley.Utilities.UploadPictures.InternetBroadcastReceiver;
 import com.logistics.riftvalley.data.model.Entity.PicturesDB;
+import com.logistics.riftvalley.ui.StockMovements.Sale.DispatchPicturesDialog;
 import com.logistics.riftvalley.ui.StockMovements.Sale.SalesPresenter;
 import com.logistics.riftvalley.ui.StockMovements.Sale._PicturesView;
 import com.logistics.riftvalley.ui.StockMovements.Sale._SalesPresenter;
@@ -58,7 +49,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class PicturesView extends AppCompatActivity implements ExitDialog.ExitSave, _PicturesView {
+import static com.logistics.riftvalley.Utilities.PublicStaticVariables.DISPATCH_PICTURES;
+
+public class PicturesView extends AppCompatActivity implements ExitDialog.ExitSave, _PicturesView, DispatchPicturesDialog.DispatchPicturesListener {
 
     Uri photoURI;
     File photoFile;
@@ -72,6 +65,9 @@ public class PicturesView extends AppCompatActivity implements ExitDialog.ExitSa
 
     long unixDate;
     String date;
+
+    // indicates if activity was opened inside the Sales module i.e before dispatch
+    String dispatchPictures;
 
     /** List that stores all pics **/
     public static List<PicturesDB> imagesList = new ArrayList<>();
@@ -93,6 +89,8 @@ public class PicturesView extends AppCompatActivity implements ExitDialog.ExitSa
         img = findViewById(R.id.img);
         label = findViewById(R.id.label);
         recyclerView = findViewById(R.id.recyclerView);
+
+        dispatchPictures = getIntent().getStringExtra(DISPATCH_PICTURES);
 
         snap.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -122,7 +120,6 @@ public class PicturesView extends AppCompatActivity implements ExitDialog.ExitSa
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         //Pic taken successfully & added to List
-        Log.i("URI--IMAGE", "" + photoURI);
 
         if (requestCode == 1 && resultCode == RESULT_OK) {
             addPicToGallery(photoFile);
@@ -133,8 +130,10 @@ public class PicturesView extends AppCompatActivity implements ExitDialog.ExitSa
                 // unixDate initially set to 0 and will be added from a report's unixDate
                 unixDate = 0;
 
+                // if intent is null use the delivery note docEntry else use the Sales Order docEntry
                 imagesList.add(new PicturesDB(
                         SharedPreferencesClass.getDocEntryNumber(),
+                        SharedPreferencesClass.getSalesOrderDocEntry(),
                         photoFile.getAbsolutePath(),
                         date,
                         0, 0));
@@ -219,10 +218,22 @@ public class PicturesView extends AppCompatActivity implements ExitDialog.ExitSa
 
     @Override
     public void onBackPressed() {
-        if(imagesList.size() > 0)
-            salesPresenter.updatePictures(this, imagesList);
-        else
-            finish();
+
+        Log.d("PicturesDispatch", "dispatch :: " + dispatchPictures + " countTotalNewPicturesTaken() :: " + countTotalNewPicturesTaken());
+
+        // check if the Dispatch Activity opened the PicturesView
+        if(dispatchPictures != null){
+            DialogFragment dialog = new DispatchPicturesDialog();
+            dialog.show(getSupportFragmentManager(), "Dialog");
+        }
+        else{
+
+            if(imagesList.size() > 0)
+                salesPresenter.updatePictures(this, imagesList);
+            else
+                finish();
+
+        }
     }
 
     @Override
@@ -237,22 +248,42 @@ public class PicturesView extends AppCompatActivity implements ExitDialog.ExitSa
 
         switch (item.getItemId()){
             case android.R.id.home:
-                if(imagesList.size() > 0)
+
+                if(imagesList.size() > 0){
+
+                    if(dispatchPictures != null){
+
+                        DialogFragment dialog = new DispatchPicturesDialog();
+                        dialog.show(getSupportFragmentManager(), "Dialog");
+                        return true;
+                    }
+
                     salesPresenter.updatePictures(this, imagesList);
+
+                }
                 else
                     finish();
                 break;
             case R.id.save:
+
                 if(imagesList.size() > 0) {
+
+                    // check if the Dispatch Activity opened the PicturesView
+                    if(dispatchPictures != null){
+                        if(countTotalNewPicturesTaken() < 2){
+                            // tell user to take at least 2 post dispatch pictures
+                            Toast.makeText(this, "Please take at least 2 new pictures after dispatch", Toast.LENGTH_LONG).show();
+                            return true;
+                        }
+                    }
+
                     salesPresenter.savePictures(this, imagesList);
                     item.setVisible(false);
 
-                    // InternetBroadcastReceiver.StartReportUploading(this);
-
                 }
-                else{
+                else
                     Toast.makeText(this, "No pictures found to save", Toast.LENGTH_SHORT).show();
-                }
+
                 break;
         }
         return true;
@@ -270,6 +301,7 @@ public class PicturesView extends AppCompatActivity implements ExitDialog.ExitSa
 
     @Override
     public void picturesList(List<PicturesDB> picturesList) {
+
         imagesList = picturesList;
 
         if(imagesList.size() > 0)
@@ -288,22 +320,37 @@ public class PicturesView extends AppCompatActivity implements ExitDialog.ExitSa
             Toast.makeText(this, "Pictures saved", Toast.LENGTH_SHORT).show();
             // clear list
             imagesList.clear();
-            finish();
         }
         else
             Toast.makeText(this, "Sorry operation failed", Toast.LENGTH_SHORT).show();
+
+        finish();
 
     }
 
     @Override
     public void isUpdatePicturesOperationSuccessful(boolean isSuccessful) {
+
         if(isSuccessful){
             Toast.makeText(this, "Pictures saved to drafts", Toast.LENGTH_SHORT).show();
-            finish();
+            imagesList.clear();
         }
         else
             Toast.makeText(this, "Sorry operation failed", Toast.LENGTH_SHORT).show();
 
+        finish();
+
+    }
+
+    @Override
+    public void dispatchDialogSavePicturesClicked() {
+        // close the dialog
+    }
+
+    @Override
+    public void dispatchDialogExitAnywayClicked() {
+        // save pictures as drafts
+        salesPresenter.updatePictures(this, imagesList);
     }
 
     /** Recycler View code **/
@@ -401,6 +448,43 @@ public class PicturesView extends AppCompatActivity implements ExitDialog.ExitSa
             }
 
         }
+    }
+
+    // checks if at least 2 new pictures have been taken i.e added to the imagesList or at least 2 picture
+    public int countTotalNewPicturesTaken(){
+
+        int unsavedPicturesCount = 0;
+
+        // if a pic in the imageList has an id == 0 (zero) it means the picture hasn't been added to the DB thus far
+        // so there should be at least 2 pictures with an is == 0
+        for(PicturesDB picture : imagesList){
+            if(picture.getId() == 0 || picture.getSaved() == 0 /*|| picture.getDeliveryNoteDocEntry() == 0*/ )
+                ++unsavedPicturesCount;
+        }
+
+        return unsavedPicturesCount;
+
+    }
+
+    // checks if at least 2 new pictures have been taken i.e added to the imagesList
+    public boolean haveDispatchPicturesBeenTaken(){
+
+        int unsavedPicturesCount = 0;
+
+        // if a pic in the imageList has an id == 0 (zero) it means the picture hasn't been added to the DB thus far
+        // so there should be at least 2 pictures with an is == 0
+        for(PicturesDB picture : imagesList){
+
+            if(picture.getId() > 0)
+                ++unsavedPicturesCount;
+
+            if(unsavedPicturesCount >= 2)
+                return true;
+
+        }
+
+        return false;
+
     }
 
 }

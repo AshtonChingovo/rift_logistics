@@ -70,6 +70,7 @@ public class Caption extends AppCompatActivity implements DeleteImageDialog.Dele
                     unixDate = 0;
 
                     PicturesView.imagesList.add(new PicturesDB(
+                            SharedPreferencesClass.getDocEntryNumber(),
                             SharedPreferencesClass.getSalesOrderDocEntry(),
                             photoURI,
                             date,

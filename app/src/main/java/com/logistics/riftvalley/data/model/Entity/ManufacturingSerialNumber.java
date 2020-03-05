@@ -2,18 +2,17 @@ package com.logistics.riftvalley.data.model.Entity;
 
 public class ManufacturingSerialNumber {
 
-    int MfrSerialNo;
+    String MfrSerialNo;
 
-    public ManufacturingSerialNumber(int mfrSerialNo) {
+    public ManufacturingSerialNumber(String mfrSerialNo) {
         MfrSerialNo = mfrSerialNo;
     }
 
-    public int getMfrSerialNo() {
+    public String getMfrSerialNo() {
         return MfrSerialNo;
     }
 
-    public void setMfrSerialNo(int mfrSerialNo) {
+    public void setMfrSerialNo(String mfrSerialNo) {
         MfrSerialNo = mfrSerialNo;
     }
-
 }

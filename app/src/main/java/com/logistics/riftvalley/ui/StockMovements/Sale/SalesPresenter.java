@@ -33,6 +33,7 @@ public class SalesPresenter implements _SalesPresenter{
     // Reference to views
     _SalesView salesView;
     _PicturesView picturesView;
+    _SalesLandingPageView salesLandingPageView;
 
     String operationSource;
 
@@ -48,6 +49,11 @@ public class SalesPresenter implements _SalesPresenter{
     @Override
     public void initializeView(_PicturesView picturesView) {
         this.picturesView = picturesView;
+    }
+
+    @Override
+    public void initializeView(_SalesLandingPageView salesLandingPageView) {
+        this.salesLandingPageView = salesLandingPageView;
     }
 
     @Override
@@ -71,7 +77,7 @@ public class SalesPresenter implements _SalesPresenter{
     }
 
     @Override
-    public void dispatchGoods(List<SalesOrderDocumentLinesSerialNumbers> barcodes) {
+    public void dispatchGoods(List<SalesOrderDocumentLinesSerialNumbers> barcodes, Context context) {
 
         List<SalesOrderDocumentLinesSerialNumbers> validBarcodes = new ArrayList<>();
         List<SalesOrdersDocumentLines> documentLines = new ArrayList<>();
@@ -85,7 +91,7 @@ public class SalesPresenter implements _SalesPresenter{
 
         documentLines.add(new SalesOrdersDocumentLines(SharedPreferencesClass.getSalesOrderItemCode(), SharedPreferencesClass.getWarehouseCode(), validBarcodes.size(), SALES_BASE_TYPE, SharedPreferencesClass.getSalesOrderDocEntry(), SALES_BASE_LINE, validBarcodes));
 
-        dataManager.dispatchGoods(documentLines);
+        dataManager.dispatchGoods(documentLines, context);
 
     }
 
@@ -105,9 +111,9 @@ public class SalesPresenter implements _SalesPresenter{
     }
 
     @Override
-    public void doesSerialNumberExistInSAP(String serialNumber, String operationSource) {
+    public void doesSerialNumberExistInSAP(String serialNumber, String shippingLabelBarcode, String operationSource) {
         this.operationSource = operationSource;
-        dataManager.doesSerialNumberExistInSAP(serialNumber);
+        dataManager.doesSerialNumberExistInSAP(serialNumber, shippingLabelBarcode);
     }
 
     @Override
@@ -116,13 +122,48 @@ public class SalesPresenter implements _SalesPresenter{
     }
 
     @Override
-    public void dispatchProcessesRequests(boolean isSuccessful, String message) {
-        salesView.dispatchProcessResponse(isSuccessful, message, operationSource);
+    public void dispatchProcessesRequests(boolean isSuccessful, String message, JSONArray jsonArray) {
+        // salesView.dispatchProcessResponse(isSuccessful, message, operationSource);
+
+        if(isSuccessful){
+            try {
+                salesView.dispatchProcessResponse(true, message, new SalesOrderDocumentLinesSerialNumbers(jsonArray.getJSONObject(0).getString("MfrSerialNo"),
+                        jsonArray.getJSONObject(0).getString("SerialNumber"), jsonArray.getJSONObject(0).getInt("SystemNumber")));
+            } catch (JSONException e) {
+                salesView.dispatchProcessResponse(false, message, null);
+                e.printStackTrace();
+            }
+        }
+        else
+            salesView.dispatchProcessResponse(false, message, null);
+
     }
 
     @Override
-    public void dispatchGoodsResponse(boolean isSuccessful, String message) {
+    public void dispatchGoodsResponse(boolean isSuccessful, String message, JSONArray jsonArray) {
         salesView.dispatchGoodsResponse(isSuccessful, message);
+
+/*        if(isSuccessful){
+            try {
+                salesView.isShippingCaseNumberAdded(true, message,
+                        new SalesOrderDocumentLinesSerialNumbers(
+                                jsonArray.getJSONObject(0).getString("MfrSerialNo"),
+                                jsonArray.getJSONObject(0).getString("SerialNumber"),
+                                jsonArray.getJSONObject(0).getInt("SystemNumber"))
+                );
+            } catch (JSONException e) {
+                salesView.isShippingCaseNumberAdded(false, message, null);
+                e.printStackTrace();
+            }
+        }
+        else
+            salesView.isShippingCaseNumberAdded(false, message, null);*/
+
+
+        if(isSuccessful){
+
+        }
+
     }
 
     @Override
@@ -149,7 +190,8 @@ public class SalesPresenter implements _SalesPresenter{
 
         // set all pictures to saved value of zero
         for(PicturesDB picture : picturesDBList){
-            picture.setSaved(0);
+            if(picture.getId() == 0)
+                picture.setSaved(0);
         }
 
         dataManager.picturesUpdate(context, picturesDBList);
@@ -191,6 +233,16 @@ public class SalesPresenter implements _SalesPresenter{
     @Override
     public void delete(PicturesDB picture) {
         dataManager.deleteImage(picture);
+    }
+
+    @Override
+    public void haveDispatchPicturesBeenTaken(Context context) {
+        dataManager.haveDispatchPicturesBeenTaken(context);
+    }
+
+    @Override
+    public void dispatchPicturesHaveBeenTaken(boolean dispatchPicturesHaveBeenTaken) {
+        salesLandingPageView.havePicturesBeenTaken(dispatchPicturesHaveBeenTaken);
     }
 
     public String convertToBase64(String filePath){

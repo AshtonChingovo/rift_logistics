@@ -157,7 +157,7 @@ public class MoveToFumigation extends AppCompatActivity implements _SalesView{
     }
 
     @Override
-    public void dispatchProcessResponse(boolean isSuccessful, String message, String operationSource) {
+    public void dispatchProcessResponse(boolean isSuccessful, String message, SalesOrderDocumentLinesSerialNumbers salesOrderDocumentLinesSerialNumbers) {
 
     }
 

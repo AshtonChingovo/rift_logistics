@@ -38,6 +38,7 @@ import static com.logistics.riftvalley.Utilities.PublicStaticVariables.CHECK_OUT
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.GRADE_RECLASSIFICATION;
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.MOVE_TO_DISPATCH_ACTIVITY;
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.MOVE_TO_DISPATCH_SALES;
+import static com.logistics.riftvalley.Utilities.PublicStaticVariables.MOVE_TO_DISPATCH_TRANSFERS_ACTIVITY;
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.MOVE_TO_FUMIGATION_SALES;
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.PRODUCTION_RETURN;
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.STOCK_DISPOSALS;
@@ -181,7 +182,7 @@ public class DataManager implements _DataManager{
         else{
             if(serialNumberTransferActivityRequestSource == SCAN_NEW_INVENTORY)
                 newInventoryPresenter.serialNumberSystemNumber(systemNumber);
-            else if(serialNumberTransferActivityRequestSource == IN_WAREHOUSE_ACTIVITY || serialNumberTransferActivityRequestSource == MOVE_TO_DISPATCH_ACTIVITY
+            else if(serialNumberTransferActivityRequestSource == IN_WAREHOUSE_ACTIVITY || serialNumberTransferActivityRequestSource == MOVE_TO_DISPATCH_TRANSFERS_ACTIVITY
                     || serialNumberTransferActivityRequestSource == CHECK_OUT || serialNumberTransferActivityRequestSource == CHECK_IN)
                 transfersPresenter.serialNumberSystemNumber(systemNumber);
             else if(serialNumberTransferActivityRequestSource == PRODUCTION_RETURN)
@@ -288,8 +289,8 @@ public class DataManager implements _DataManager{
     }
 
     @Override
-    public void doesSerialNumberExistInSAP(String serialNumber) {
-        api_helper.doesSerialNumberExistInSAP(serialNumber);
+    public void doesSerialNumberExistInSAP(String serialNumber, String shippingLabelBarcode) {
+        api_helper.doesSerialNumberExistInSAP(serialNumber, shippingLabelBarcode);
     }
 
     @Override
@@ -302,8 +303,8 @@ public class DataManager implements _DataManager{
     }
 
     @Override
-    public void dispatchProcesses(boolean isSuccessful, String message) {
-        salesPresenter.dispatchProcessesRequests(isSuccessful, message);
+    public void dispatchProcesses(boolean isSuccessful, String message,JSONArray jsonArray) {
+        salesPresenter.dispatchProcessesRequests(isSuccessful, message, jsonArray);
     }
 
     @Override
@@ -312,13 +313,13 @@ public class DataManager implements _DataManager{
     }
 
     @Override
-    public void dispatchGoods(List<SalesOrdersDocumentLines> documentLines) {
-        api_helper.dispatchGoods(documentLines);
+    public void dispatchGoods(List<SalesOrdersDocumentLines> documentLines, Context context) {
+        api_helper.dispatchGoods(documentLines, context);
     }
 
     @Override
     public void dispatchGoodsResponse(boolean isSuccessful, String message) {
-        salesPresenter.dispatchGoodsResponse(isSuccessful, message);
+        salesPresenter.dispatchGoodsResponse(isSuccessful, message, null);
     }
 
     @Override
@@ -377,6 +378,16 @@ public class DataManager implements _DataManager{
     @Override
     public void deleteImage(PicturesDB picture) {
         api_helper.deleteImage(picture);
+    }
+
+    @Override
+    public void haveDispatchPicturesBeenTaken(Context context) {
+        api_helper.haveDispatchPicturesBeenTaken(context);
+    }
+
+    @Override
+    public void dispatchPicturesHaveBeenTaken(boolean dispatchPicturesTaken) {
+        salesPresenter.dispatchPicturesHaveBeenTaken(dispatchPicturesTaken);
     }
 
     public StockTransfer generateStockTransfersJson(int systemNumber, int binAbsEntry){
