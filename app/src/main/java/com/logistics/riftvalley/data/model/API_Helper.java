@@ -559,9 +559,6 @@ public class API_Helper implements _API_Helper {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-
-            Log.d("SalesList", " API_Helper jString : " + jsonResponseString);
-
             dataManager.salesOrderListResponse(jsonResponseString);
         }
     }
@@ -723,8 +720,6 @@ public class API_Helper implements _API_Helper {
     // create DeliveryNote and close Sales order
     public class CreateDeliveryNote extends AsyncTask<List<SalesOrdersDocumentLines>, Void, Void> {
 
-        JSONObject jsonResponse = null;
-        JSONArray deliveryCreatedJson;
         String deliveryCreated;
 
         int docEntryNumber = 0;
@@ -734,6 +729,8 @@ public class API_Helper implements _API_Helper {
         @Override
         protected Void doInBackground(List<SalesOrdersDocumentLines>... salesOrdersDocumentLines) {
 
+            PicturesDao picturesDao = AppDatabase.getDatabase(context).picturesDao();
+
             deliveryCreated = RetrofitInstance.createDeliveryNote(SharedPreferencesClass.getCookie(), new DeliveryDocument(SharedPreferencesClass.getSalesOrderCardCode(), salesOrdersDocumentLines[0]));
 
             // get the delivery note docEntry # and update the pictures in the DB and set the current delivery note # to be of the created delivery note
@@ -741,20 +738,14 @@ public class API_Helper implements _API_Helper {
 
                 try {
 
-/*                    jsonResponse = new JSONObject(deliveryCreated);
-
-                    deliveryCreatedJson = jsonResponse.ge("value");*/
-
                     // get the delivery note doc entry
-                    docEntryNumber = jsonResponse.getJSONArray(DOCUMENT_LINES).getJSONObject(0).getInt(DOC_ENTRY);
+                    docEntryNumber = new JSONObject(deliveryCreated).getJSONArray(DOCUMENT_LINES).getJSONObject(0).getInt(DOC_ENTRY);
 
-                    Log.d("DeliveryNoteSAP", " ::: docEntry# ::: " + docEntryNumber);
-
-                    // set the docEntry in the SharedPreferences
+                    // set the delivery document docEntry in the SharedPreferences
                     SharedPreferencesClass.writeDocEntryNumber(docEntryNumber);
 
                     // update the pictures in the DB with the docEntry #
-                    PicturesDao picturesDao = AppDatabase.getDatabase(context).picturesDao();
+                    Log.d("DeliveryNoteSAP", " ::: docEntry# ::: " + docEntryNumber + " ::: salesOrderDocEntry# ::: " + SharedPreferencesClass.getSalesOrderDocEntry());
 
                     dbUpdateResponse = picturesDao.updatePictureDeliveryNoteNumber(docEntryNumber, SharedPreferencesClass.getSalesOrderDocEntry());
 
@@ -774,7 +765,7 @@ public class API_Helper implements _API_Helper {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            // dataManager.dispatchGoodsResponse(deliveryCreated, "");
+            dataManager.dispatchGoodsResponse(docEntryNumber > 0, "");
         }
     }
 
@@ -784,11 +775,8 @@ public class API_Helper implements _API_Helper {
 
         @Override
         protected Void doInBackground(Void... aVoids) {
-
             lotNumbers = RetrofitInstance.getLotNumbers(SharedPreferencesClass.getCookie());
-
             return null;
-
         }
 
         @Override
@@ -796,6 +784,7 @@ public class API_Helper implements _API_Helper {
             super.onPostExecute(aVoid);
             dataManager.returnLotNumbers(lotNumbers);
         }
+
     }
 
     public class GradeReclassification extends AsyncTask<Void, Void, Void> {
@@ -874,7 +863,6 @@ public class API_Helper implements _API_Helper {
         }
     }
 
-
     /*
     *   PicturesView
     * */
@@ -885,10 +873,12 @@ public class API_Helper implements _API_Helper {
 
             PicturesDao picturesDao = AppDatabase.getDatabase(context).picturesDao();
 
+            Log.d("DeliveryNoteSAP", " Pictures :: deliveryDoc # :: " + SharedPreferencesClass.getDocEntryNumber() + " :: salesOrder# :: " + SharedPreferencesClass.getSalesOrderDocEntry());
+
             if(SharedPreferencesClass.getDocEntryNumber() == 0)
                 pictures = picturesDao.getPicturesTakenAlreadyUsingDeliveryNoteDocEntry(SharedPreferencesClass.getSalesOrderDocEntry());
             else
-                pictures = picturesDao.getPicturesTakenAlreadyUsingDeliveryNoteAndSalesOrderDocEntry(SharedPreferencesClass.getSalesOrderDocEntry(), SharedPreferencesClass.getSalesOrderDocEntry());
+                pictures = picturesDao.getPicturesTakenAlreadyUsingDeliveryNoteAndSalesOrderDocEntry(SharedPreferencesClass.getDocEntryNumber(), SharedPreferencesClass.getSalesOrderDocEntry());
 
             return null;
 
@@ -957,7 +947,7 @@ public class API_Helper implements _API_Helper {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             dataManager.isPicturesOperationSuccessful(insertOps > 0 || updateOps > 0, 0);
-            InternetBroadcastReceiver.StartReportUploading(context);
+            // InternetBroadcastReceiver.StartReportUploading(context);
         }
     }
 

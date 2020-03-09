@@ -93,6 +93,13 @@ public class SaleLandingPage extends AppCompatActivity implements _SalesLandingP
             @Override
             public void onClick(View v) {
 
+                // if delivery docEntry number is not zero then a dispatch has been successfully completed
+                if(SharedPreferencesClass.getDocEntryNumber() != 0){
+                    Toast.makeText(SaleLandingPage.this, "Dispatch has been completed already", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // curve for if a SalesOrder comes without a quantity
                 if(SharedPreferencesClass.getSalesOrderQuantity() == 0){
                     Toast.makeText(SaleLandingPage.this, "No Cartons are required", Toast.LENGTH_SHORT).show();
                     return;

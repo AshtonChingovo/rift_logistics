@@ -51,7 +51,8 @@ import java.util.List;
 
 import static com.logistics.riftvalley.Utilities.PublicStaticVariables.DISPATCH_PICTURES;
 
-public class PicturesView extends AppCompatActivity implements ExitDialog.ExitSave, _PicturesView, DispatchPicturesDialog.DispatchPicturesListener {
+public class PicturesView extends AppCompatActivity implements ExitDialog.ExitSave, _PicturesView,
+        DispatchPicturesDialog.DispatchPicturesListener {
 
     Uri photoURI;
     File photoFile;
@@ -66,7 +67,7 @@ public class PicturesView extends AppCompatActivity implements ExitDialog.ExitSa
     long unixDate;
     String date;
 
-    // indicates if activity was opened inside the Sales module i.e before dispatch
+    // indicates if activity was opened by the Dispatch activity
     String dispatchPictures;
 
     /** List that stores all pics **/
@@ -343,11 +344,6 @@ public class PicturesView extends AppCompatActivity implements ExitDialog.ExitSa
     }
 
     @Override
-    public void dispatchDialogSavePicturesClicked() {
-        // close the dialog
-    }
-
-    @Override
     public void dispatchDialogExitAnywayClicked() {
         // save pictures as drafts
         salesPresenter.updatePictures(this, imagesList);
@@ -458,7 +454,7 @@ public class PicturesView extends AppCompatActivity implements ExitDialog.ExitSa
         // if a pic in the imageList has an id == 0 (zero) it means the picture hasn't been added to the DB thus far
         // so there should be at least 2 pictures with an is == 0
         for(PicturesDB picture : imagesList){
-            if(picture.getId() == 0 || picture.getSaved() == 0 /*|| picture.getDeliveryNoteDocEntry() == 0*/ )
+            if(picture.getId() == 0)
                 ++unsavedPicturesCount;
         }
 

@@ -3,7 +3,9 @@ package com.logistics.riftvalley.ui.StockMovements.Sale;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.util.Base64;
+import android.util.Log;
 
 import com.logistics.riftvalley.Utilities.SharedPreferences.SharedPreferencesClass;
 import com.logistics.riftvalley.data.DataManager;
@@ -19,6 +21,8 @@ import org.json.JSONException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -142,28 +146,6 @@ public class SalesPresenter implements _SalesPresenter{
     @Override
     public void dispatchGoodsResponse(boolean isSuccessful, String message, JSONArray jsonArray) {
         salesView.dispatchGoodsResponse(isSuccessful, message);
-
-/*        if(isSuccessful){
-            try {
-                salesView.isShippingCaseNumberAdded(true, message,
-                        new SalesOrderDocumentLinesSerialNumbers(
-                                jsonArray.getJSONObject(0).getString("MfrSerialNo"),
-                                jsonArray.getJSONObject(0).getString("SerialNumber"),
-                                jsonArray.getJSONObject(0).getInt("SystemNumber"))
-                );
-            } catch (JSONException e) {
-                salesView.isShippingCaseNumberAdded(false, message, null);
-                e.printStackTrace();
-            }
-        }
-        else
-            salesView.isShippingCaseNumberAdded(false, message, null);*/
-
-
-        if(isSuccessful){
-
-        }
-
     }
 
     @Override
@@ -190,8 +172,9 @@ public class SalesPresenter implements _SalesPresenter{
 
         // set all pictures to saved value of zero
         for(PicturesDB picture : picturesDBList){
-            if(picture.getId() == 0)
+            if(picture.getId() == 0){
                 picture.setSaved(0);
+            }
         }
 
         dataManager.picturesUpdate(context, picturesDBList);
@@ -204,6 +187,7 @@ public class SalesPresenter implements _SalesPresenter{
         // set all pictures to saved value of zero
         for(PicturesDB picture : picturesDBList){
             picture.setSaved(1);
+            // picture.setBase64String(convertToBase64(picture.getUri(), context));
         }
 
         dataManager.picturesSave(context, picturesDBList);
@@ -245,8 +229,28 @@ public class SalesPresenter implements _SalesPresenter{
         salesLandingPageView.havePicturesBeenTaken(dispatchPicturesHaveBeenTaken);
     }
 
-    public String convertToBase64(String filePath){
+    public String convertToBase64(String filePath, Context context) {
 
+        InputStream ims = null;
+
+        try {
+
+            ims = context.getContentResolver().openInputStream(Uri.fromFile(new File(filePath)));
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        Bitmap bitmap = BitmapFactory.decodeStream(ims);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 70, byteArrayOutputStream);
+        byte[] imageBytes = byteArrayOutputStream.toByteArray();
+        String imageString = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+
+        return imageString;
+
+/*
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Bitmap bitmap = BitmapFactory.decodeFile(filePath);
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
@@ -254,6 +258,7 @@ public class SalesPresenter implements _SalesPresenter{
         String imageString = Base64.encodeToString(imageBytes, Base64.DEFAULT);
 
         return imageString;
+*/
 
     }
 

@@ -23,7 +23,7 @@ public interface PicturesDao {
     int updatePicture(PicturesDB picture);
 
     @Query("UPDATE salesPictures SET deliveryNoteDocEntry = :deliveryNoteDocEntry WHERE salesOrderDocEntry = :salesDocEntry")
-    int updatePictureDeliveryNoteNumber(int salesDocEntry, int deliveryNoteDocEntry);
+    int updatePictureDeliveryNoteNumber(int deliveryNoteDocEntry, int salesDocEntry);
 
     @Query("SELECT * FROM salesPictures WHERE salesOrderDocEntry = :docEntry ORDER BY id DESC")
     List<PicturesDB> getPicturesTakenAlreadyUsingDeliveryNoteDocEntry(int docEntry);

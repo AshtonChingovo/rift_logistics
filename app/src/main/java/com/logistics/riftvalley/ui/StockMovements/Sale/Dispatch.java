@@ -26,20 +26,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.logistics.riftvalley.R;
-import com.logistics.riftvalley.data.model.SalesOrder.DeliveryDocument;
 import com.logistics.riftvalley.data.model.SalesOrder.DeliveryNote;
 import com.logistics.riftvalley.data.model.SalesOrder.SalesOrderDocumentLinesSerialNumbers;
 import com.logistics.riftvalley.data.model.SalesOrder.SalesOrderList;
-import com.logistics.riftvalley.data.model.SalesOrder.SalesOrdersDocumentLines;
-import com.logistics.riftvalley.Retrofit.RetrofitInstance;
 import com.logistics.riftvalley.Utilities.SharedPreferences.SharedPreferencesClass;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.logistics.riftvalley.ui.StockMovements.Sale.PicturesPackage.PicturesView;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.logistics.riftvalley.Utilities.PublicStaticVariables.DISPATCH_PICTURES;
 
 public class Dispatch extends AppCompatActivity implements DispatchDialog.DispatchDialogListener,
         ShippingCaseNumberDialog.ScanDialog, _SalesView{
@@ -56,6 +52,9 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
     String barcode;
     String shippingCaseNumber;
     List<SalesOrderDocumentLinesSerialNumbers> barcodes = new ArrayList<>();
+
+    // count for tracking the total valid serialNumbers in the list
+    int validSerialNumbersCount = 0;
 
     // dispatch methods
     final String EXISTS = "EXISTS";
@@ -96,6 +95,12 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
             @Override
             public void onReceive(Context context, Intent intent) {
 
+                // check to see if the max has not been reached already
+                if(validSerialNumbersCount >= SharedPreferencesClass.getSalesOrderQuantity()){
+                    Toast.makeText(Dispatch.this, "The maximum has been reached", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 if(intent.getStringExtra("SCAN_BARCODE1") == null)
                     return;
                 else{
@@ -115,7 +120,7 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
 
                     // check if serial number has not been scanned already
                     for(SalesOrderDocumentLinesSerialNumbers scannedBarcodes: barcodes){
-                        if(scannedBarcodes.getInternalSerialNumber().equalsIgnoreCase(barcode) || scannedBarcodes.getInternalSerialNumber().equalsIgnoreCase("B_" + barcode)){
+                        if(scannedBarcodes.getInternalSerialNumber().equalsIgnoreCase(barcode)){
                             Toast.makeText(Dispatch.this, "Sorry, carton has already been scanned", Toast.LENGTH_LONG).show();
                             progressBar.setVisibility(View.INVISIBLE);
 
@@ -148,6 +153,7 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
 
         if(barcodes.size() > 0) {
 
+            // count for tracking the total valid serialNumbers in the list
             int validSerialNumbersCount = 0;
 
             for(SalesOrderDocumentLinesSerialNumbers salesOrderDocumentLinesSerialNumbers : barcodes){
@@ -174,7 +180,7 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
 
         recyclerView.getAdapter().notifyDataSetChanged();
 
-        // Dispatch.this.registerReceiver(mReceiver, mFilter);
+        Dispatch.this.registerReceiver(mReceiver, mFilter);
 
     }
 
@@ -193,32 +199,30 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
 
         progressBar.setVisibility(View.INVISIBLE);
 
-/*
-        // if isSuccessful returns true then SerialNumber exists in SAP thus set Shipping Case Number to the SAP serial number
-        if(isSuccessful){
-            salesPresenter.setShippingCaseNumberForSerialNumberSAP(barcode, shippingCaseNumber);
-        }
-        else{
-            barcodes.add(0, new SalesOrderDocumentLinesSerialNumbers(null, "B_" + barcode, 0));
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-            success(false);
-        }
-*/
-
         if(isSuccessful){
             // set the shipping case number
             salesOrderDocumentLinesSerialNumbers.setManufacturerSerialNumber(shippingCaseNumber);
             // add barcode to list
             barcodes.add(0, salesOrderDocumentLinesSerialNumbers);
+
+            // add to the total valid serial numbers scanned thus far
+            validSerialNumbersCount += 1;
+
+            // setText
+            String validSerialNumbers = validSerialNumbersCount + "/" + SharedPreferencesClass.getSalesOrderQuantity();
+            count.setText(validSerialNumbers);
+
             success(true);
+
         }
         else{
+
             Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-            // set the shipping case number
-            salesOrderDocumentLinesSerialNumbers.setManufacturerSerialNumber(shippingCaseNumber);
+
             // add barcode to list
             barcodes.add(0, new SalesOrderDocumentLinesSerialNumbers(null, "B_" + barcode, 0));
             success(false);
+
         }
 
     }
@@ -230,7 +234,13 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
 
         if(isSuccessful){
             Toast.makeText(Dispatch.this, "Goods successfully dispatched", Toast.LENGTH_SHORT).show();
+
+            // go and take after dispatch pictures
+            Intent intent = new Intent(this, PicturesView.class);
+            intent.putExtra(DISPATCH_PICTURES, DISPATCH_PICTURES);
+            startActivity(intent);
             finish();
+
         }
         else{
             Toast.makeText(Dispatch.this, "Sorry, operation failed", Toast.LENGTH_SHORT).show();
@@ -290,6 +300,9 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
                 @Override
                 public void onClick(View v) {
 
+                    // remove from the valid serial numbers total
+                    validSerialNumbersCount =-1;
+
                     barcodes.remove(getAdapterPosition());
                     recyclerView.getAdapter().notifyDataSetChanged();
 
@@ -314,12 +327,14 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
                 return;
             }
             else{
+                delete.setVisibility(View.VISIBLE);
                 barcode.setTextColor(getResources().getColor(R.color.fontColor));
                 barcodeImg.setImageResource(R.drawable.barcode_background);
                 barcode.setText("" + barcodes.get(position).getInternalSerialNumber());
                 return;
             }
         }
+
     }
 
     @Override
@@ -335,7 +350,7 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
         if(item.getItemId() == android.R.id.home)
             finish();
         else{
-            if(barcodes.size() != SharedPreferencesClass.getSalesOrderQuantity()){
+            if(validSerialNumbersCount != SharedPreferencesClass.getSalesOrderQuantity()){
                 Toast.makeText(this, SharedPreferencesClass.getSalesOrderQuantity() + " required to Dispatch" , Toast.LENGTH_SHORT).show();
                 return true;
             }
@@ -361,8 +376,10 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void ScanDialogOkClicked(String serialNumber, String shippingLabelBarcode) {
-        shippingCaseNumber = shippingLabelBarcode;
 
+        // unregisterReceiver(mReceiver);
+
+        shippingCaseNumber = shippingLabelBarcode;
         salesPresenter.doesSerialNumberExistInSAP(serialNumber, shippingLabelBarcode, EXISTS);
     }
 
@@ -373,7 +390,6 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
 
 }
 
-
 /*
 *
 *
@@ -381,6 +397,6 @@ public class Dispatch extends AppCompatActivity implements DispatchDialog.Dispat
             intent.putExtra(DISPATCH_PICTURES, DISPATCH_PICTURES);
             startActivity(intent);
             finish();
-
+*
 *
 * */

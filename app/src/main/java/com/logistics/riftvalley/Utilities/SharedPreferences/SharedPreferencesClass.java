@@ -117,7 +117,7 @@ public class SharedPreferencesClass {
 
     }
 
-    // set and get delivery note docEntry number
+    // set delivery note docEntry number
     public static void writeDocEntryNumber(int docEntry){
 
         editor.putInt(context.getString(R.string.docEntryNumber), docEntry);
@@ -125,6 +125,7 @@ public class SharedPreferencesClass {
 
     }
 
+    // get delivery note docEntry number
     public static int getDocEntryNumber(){
         return sharedPref.getInt(context.getString(R.string.docEntryNumber), 0);
     }

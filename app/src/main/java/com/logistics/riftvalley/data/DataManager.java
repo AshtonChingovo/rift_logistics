@@ -113,13 +113,11 @@ public class DataManager implements _DataManager{
 
     @Override
     public void login(Login login) {
-        Log.d("DataManagerLogin", " ** login attempt ** ");
         api_helper.login(login);
     }
 
     @Override
     public void loginResponse(boolean loginResponse) {
-        Log.d("DataManagerLogin", " ** DataManager login response ** " + loginResponse);
         loginPresenter.loginResponse(loginResponse);
     }
 
@@ -155,7 +153,6 @@ public class DataManager implements _DataManager{
 
     }
 
-    // TODO check line with the following code :: serialNumberTransferActivityRequestSource == MOVE_TO_DISPATCH_ACTIVITY
     @Override
     public void returnSerialNumberSAPSystemNumberWithBinLocationAbsEntry(int systemNumber, int downloadedBinLocationAbsEntry) {
         // IF serialNumber > 0 (zero) means all's good ELSE something is wrong
@@ -243,8 +240,6 @@ public class DataManager implements _DataManager{
     public void salesOrderListResponse(String salesOrdersJsonString) {
 
         List<SalesOrderList> salesOrderLists = new ArrayList<>();
-
-        Log.d("SalesList", " DataManager jString : " + salesOrdersJsonString);
 
         if(salesOrdersJsonString != null){
             try {

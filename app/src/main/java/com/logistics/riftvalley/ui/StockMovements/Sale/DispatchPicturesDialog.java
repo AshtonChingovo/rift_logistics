@@ -19,9 +19,8 @@ public class DispatchPicturesDialog extends DialogFragment {
         super.onCreate(savedInstanceState);
 
         final AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
-        dialog.setMessage("You have unsaved pictures, do you wish to exit anyway")
-                .setPositiveButton("GO BACK", new DialogInterface.OnClickListener() {
-
+        dialog.setMessage("You need to take dispatch pictures and save them")
+                .setPositiveButton("TAKE PICTURES", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         dismiss();
@@ -39,7 +38,6 @@ public class DispatchPicturesDialog extends DialogFragment {
     }
 
     public interface DispatchPicturesListener {
-        void dispatchDialogSavePicturesClicked();
         void dispatchDialogExitAnywayClicked();
     }
 
